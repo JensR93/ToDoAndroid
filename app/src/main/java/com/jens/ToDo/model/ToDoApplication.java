@@ -3,7 +3,9 @@ package com.jens.ToDo.model;
 import android.app.Application;
 import android.widget.Toast;
 
+import com.jens.ToDo.model.impl.RetroFitToDoRUDOperationsImpl;
 import com.jens.ToDo.model.impl.RoomToDoCRUDOperationsImpl;
+import com.jens.ToDo.model.impl.SyncedToDoCrudOperations;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 
 public class ToDoApplication extends Application {
@@ -45,7 +47,7 @@ public class ToDoApplication extends Application {
         else{
 
             Toast.makeText(this,"Server accessible. Use remoteCRUD",Toast.LENGTH_LONG);
-            //crudOperations=new SyncedDataItemCrudOperations(new RoomDataItemCRUDOperationsImpl(this),new RetroFitDataItemCRUDOperationsImpl());
+            crudOperations=new SyncedToDoCrudOperations(new RoomToDoCRUDOperationsImpl(this),new RetroFitToDoRUDOperationsImpl());
         }
     }
 }
