@@ -4,11 +4,12 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverter;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class ToDo {
+public class ToDo implements Serializable {
 
     @PrimaryKey(autoGenerate = true)
     private Long id;
@@ -76,5 +77,9 @@ public class ToDo {
 
     public void setContactList(List<String> contactList) {
         this.contactList = contactList;
+    }
+    @Override
+    public String toString() {
+        return name + ", description=" + description+"("+id+", ready = "+done+")";
     }
 }
