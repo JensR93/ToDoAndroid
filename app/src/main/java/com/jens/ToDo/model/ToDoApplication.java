@@ -18,4 +18,34 @@ public class ToDoApplication extends Application {
         }
         return crudOperations;
     }
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        CreateDatabaseImp();
+    }
+
+    public void CreateDatabaseImp() {
+        //Fur das Projekt zum switchen ob offline oder online sync
+
+        super.onCreate();
+        //crudOperations = new RoomDataItemCRUDOperationsImpl(this);
+        //crudOperations=new SQLiteDataItemCRUDOperationsImpl(this);
+        //crudOperations=new RetroFitDataItemCRUDOperationsImpl();
+
+
+        //crudOperations=new SyncedDataItemCrudOperations(new RoomDataItemCRUDOperationsImpl(this),new RetroFitDataItemCRUDOperationsImpl());
+    }
+
+    public void setRemoteCRUDMode(boolean localCRUDMode){
+        if(!localCRUDMode){
+
+            Toast.makeText(this,"Server not accessible. Use localCRUD",Toast.LENGTH_LONG);
+            this.crudOperations=new RoomToDoCRUDOperationsImpl(this);
+        }
+        else{
+
+            Toast.makeText(this,"Server accessible. Use remoteCRUD",Toast.LENGTH_LONG);
+            //crudOperations=new SyncedDataItemCrudOperations(new RoomDataItemCRUDOperationsImpl(this),new RetroFitDataItemCRUDOperationsImpl());
+        }
+    }
 }
