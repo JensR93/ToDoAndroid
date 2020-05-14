@@ -6,26 +6,27 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import androidx.annotation.RequiresApi;
+import androidx.core.util.Consumer;
 
-import com.jens.todo.model.DataItem.DataItem;
-import com.jens.todo.model.Interface.IDataItemCRUDOperations;
+import com.jens.ToDo.model.ToDo;
+import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 
 import java.util.List;
-import java.util.function.Consumer;
 
-public class ReadAllItemsTask extends AsyncTask<Void, Void, List<DataItem>> {
 
-    private IDataItemCRUDOperations crudOperations;
-    private Consumer<List<DataItem>> callback;
+public class ReadAllItemsTask extends AsyncTask<Void, Void, List<ToDo>> {
+
+    private IToDoCRUDOperations crudOperations;
+    private Consumer<List<ToDo>> callback;
     private ProgressBar progressBar;
 
-    public ReadAllItemsTask(IDataItemCRUDOperations crudOperations, ProgressBar progressBar) {
+    public ReadAllItemsTask(IToDoCRUDOperations crudOperations, ProgressBar progressBar) {
         this.crudOperations = crudOperations;
         this.progressBar = progressBar;
     }
 
     @Override
-    protected List<DataItem> doInBackground(Void... voids) {
+    protected List<ToDo> doInBackground(Void... voids) {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -36,13 +37,13 @@ public class ReadAllItemsTask extends AsyncTask<Void, Void, List<DataItem>> {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    protected void onPostExecute(List<DataItem> dataItems) {
+    protected void onPostExecute(List<ToDo> dataItems) {
 
         this.progressBar.setVisibility(View.GONE);
         callback.accept(dataItems);
     }
 
-    public void run(Consumer<List<DataItem>> consumer) {
+    public void run(Consumer<List<ToDo>> consumer) {
         this.callback = consumer;
         super.execute();
     }
