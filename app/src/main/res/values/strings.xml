@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ToDo</string>
+    <string name="hintname">Name</string>
+    <string name="hintBeschreibung">Beschreibung</string>
 </resources>
