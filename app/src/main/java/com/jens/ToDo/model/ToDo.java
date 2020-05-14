@@ -18,7 +18,7 @@ public class ToDo implements Serializable {
     private boolean done =false;
     private boolean favourite =false;
     private Long expiry;
-    private List<String> contactList = new ArrayList<>();
+    //private List<String> contactList = new ArrayList<>();
     public ToDo(){
 
     }
@@ -71,13 +71,13 @@ public class ToDo implements Serializable {
         this.expiry = expiry;
     }
 
-    public List<String> getContactList() {
+/*    public List<String> getContactList() {
         return contactList;
     }
 
     public void setContactList(List<String> contactList) {
         this.contactList = contactList;
-    }
+    }*/
     @Override
     public String toString() {
         return name + ", description=" + description+"("+id+", ready = "+done+")";
