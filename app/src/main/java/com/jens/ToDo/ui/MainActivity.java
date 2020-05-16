@@ -79,6 +79,13 @@ public class MainActivity extends AppCompatActivity {
         listViewAdapter = createListViewAdapter();
         new CheckRemoteAvailableTask().run(available -> {
             ((ToDoApplication) getApplication()).setRemoteCRUDMode(available);
+            if(available)
+            {
+                Toast.makeText(this,"Remote available",Toast.LENGTH_SHORT).show();
+            }
+            else{
+                Toast.makeText(this,"Remote not available",Toast.LENGTH_SHORT).show();
+            }
             ToDoApplication ToDoApplication = (ToDoApplication) getApplication();
             crudOperations = (IToDoCRUDOperations) ToDoApplication.getCRUDOperations();
             readDatabase();

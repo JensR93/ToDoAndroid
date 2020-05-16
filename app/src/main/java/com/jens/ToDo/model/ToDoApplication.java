@@ -43,6 +43,7 @@ public class ToDoApplication extends Application {
 
             Toast.makeText(this,"Server not accessible. Use localCRUD",Toast.LENGTH_LONG);
             this.crudOperations=new RoomToDoCRUDOperationsImpl(this);
+
         }
         else{
 

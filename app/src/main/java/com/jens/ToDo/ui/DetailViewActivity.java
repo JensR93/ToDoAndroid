@@ -28,7 +28,13 @@ import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.tasks.DeleteItemTask;
 import com.jens.ToDo.model.tasks.UpdateItemTask;
 
+import java.security.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
+import java.util.Date;
 
 public class DetailViewActivity extends AppCompatActivity  implements View.OnClickListener{
 
@@ -98,7 +104,7 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
                         public void onDateSet(DatePicker view, int year,
                                               int monthOfYear, int dayOfMonth) {
 
-                            inputDueDate.setText(dayOfMonth + "." + (monthOfYear + 1) + "." + year);
+                            inputDueDate.setText(String.format("%02d.%02d.%04d", dayOfMonth, monthOfYear+1,year));
 
                         }
                     }, mYear, mMonth, mDay);
@@ -293,11 +299,21 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
 
                 //TODO: CreateItemTask bauen: Parameter mehrere Strings und nicht das Objekt --> ID != 0
 
-                ToDo d = new ToDo();
-                d.setName(inpName);
-                d.setDescription(inpDescription);
+                ToDo toDoElementToCreate = new ToDo();
+                toDoElementToCreate.setName(inpName);
+                toDoElementToCreate.setDescription(inpDescription);
+                toDoElementToCreate.setDone(checkDone.isChecked());
+                toDoElementToCreate.setFavourite(checkFavourite.isChecked());
+                Date date = new Date();
+                Long tsLong = System.currentTimeMillis()/1000;
+                //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
+                //LocalDate datePart = LocalDate.parse(inputDueDate.getText(),formatter);
+                //LocalTime timePart = LocalTime.parse(inputDueTime.getText());
+                //LocalDateTime dt = LocalDateTime.of(datePart, timePart);
+                toDoElementToCreate.setExpiry(tsLong);
+
                 new Thread(() -> {
-                    selectedItem = crudOperations.createItem(d);
+                    selectedItem = crudOperations.createItem(toDoElementToCreate);
                     runOnUiThread(() -> {
 
 
