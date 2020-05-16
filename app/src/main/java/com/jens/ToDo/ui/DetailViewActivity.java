@@ -34,6 +34,7 @@ public class DetailViewActivity extends AppCompatActivity {
     IToDoCRUDOperations crudOperations;
     ToDo selectedItem;
     MenuItem saveMenuItem;
+
     //endregion
 
     //region Constants
@@ -41,6 +42,7 @@ public class DetailViewActivity extends AppCompatActivity {
     public static final int STATUS_EDITED = 1;
     public static final int STATUS_DELETED = 2;
     public static final String ARG_ITEM_ID = "itemID";
+    private static final String LOGGING_TAG = DetailViewActivity.class.getSimpleName();
     //endregion
 
     @Override
@@ -182,7 +184,7 @@ public class DetailViewActivity extends AppCompatActivity {
                 if(updated){
                     returnIntent.putExtra(ARG_ITEM_ID, selectedItem.getId());
 
-                    returnIntent.putExtra("dataitem", selectedItem);
+                    returnIntent.putExtra("ToDoItem", selectedItem);
                     setResult(STATUS_EDITED,returnIntent);
                     setContentView(R.layout.activity_main);
 
@@ -203,9 +205,9 @@ public class DetailViewActivity extends AppCompatActivity {
                 new Thread(() -> {
                     selectedItem = crudOperations.createItem(d);
                     runOnUiThread(() -> {
-                        returnIntent.putExtra("test123", selectedItem.getDescription());
 
-                        returnIntent.putExtra("dataitem", selectedItem);
+
+                        returnIntent.putExtra("ToDoItem", selectedItem);
 
                         returnIntent.putExtra(ARG_ITEM_ID, selectedItem.getId());
                         setResult(STATUS_CREATED, returnIntent);
