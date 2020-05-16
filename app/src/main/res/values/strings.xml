@@ -2,4 +2,9 @@
     <string name="app_name">ToDo</string>
     <string name="hintname">Name</string>
     <string name="hintBeschreibung">Beschreibung</string>
+    <string name="inputFavourite">Favourite</string>
+    <string name="inputDone">Done</string>
+    <string name="dueDate">DD/MM/YYYY</string>
+    <string name="dueTime">00:00</string>
+    <string name="inputID">ID</string>
 </resources>

@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:padding="16dp"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_margin="16dp">
     <com.google.android.material.textfield.TextInputEditText
         android:singleLine="true"
         android:id="@+id/inputName"
-        android:layout_marginBottom="16dp"
-        android:text="Name1"
         android:hint="@string/hintname"
         android:imeOptions="actionNext"
         android:layout_width="match_parent"
@@ -18,18 +16,46 @@
         android:singleLine="true"
         android:imeOptions="actionDone"
         android:id="@+id/inputDescription"
-        android:layout_marginBottom="16dp"
-        android:text="Beschreibung2"
         android:hint="@string/hintBeschreibung"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
     </com.google.android.material.textfield.TextInputEditText>
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/inputFavourite"
+        android:id="@+id/inputFavourite">
+    </androidx.appcompat.widget.AppCompatCheckBox>
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/inputDone"
+        android:inputType="date"
+        android:id="@+id/inputDone">
+    </androidx.appcompat.widget.AppCompatCheckBox>
+    <EditText
+        android:id="@+id/inputDueDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="false"
+        android:hint="@string/dueDate">
+    </EditText>
+    <EditText
+        android:id="@+id/inputDueTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="time"
+        android:clickable="true"
+        android:focusable="false"
+        android:hint="@string/dueTime">
+    </EditText>
     <com.google.android.material.textfield.TextInputEditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="@string/inputID"
         android:layout_marginBottom="16dp"
         android:enabled="false"
-        android:text="3"
         android:id="@+id/inputID">
     </com.google.android.material.textfield.TextInputEditText>
     <com.google.android.material.floatingactionbutton.FloatingActionButton

@@ -67,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
     List<ToDo> dbItemList = null;
     private ProgressBar progressBar;
     private Comparator<ToDo> alphabeticComperator = (l, r) -> String.valueOf(l.getName()).compareTo(r.getName());
+
+    private Comparator<ToDo> undonedoneComperator = (l, r) ->Boolean.compare(l.isDone(),r.isDone());
     //endregion 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
                     long longExtra = selectedItem.getId();
                     new ReadItemTask(this.crudOperations).run(longExtra, selectedItem -> {
                         this.listViewAdapter.clear();
-                        this.dbItemList.removeIf(currentItem -> currentItem.getId() == selectedItem.getId());
+                        this.dbItemList.removeIf(currentItem -> currentItem.getId().equals(selectedItem.getId()));
                         this.dbItemList.add(selectedItem);
                         this.listViewAdapter.addAll(dbItemList);
                         updateSort();
@@ -147,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
                     //this.dbItemList.add(itemToRemoveFromList);
                     updateSort();
                     if (deleted) {
-                        Toast.makeText(this, "Delted " + selectedItem.getName(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Deleted " + selectedItem.getName(), Toast.LENGTH_LONG).show();
                         updateSort();
                     }
                 }
@@ -233,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void updateSort() {
         this.listViewAdapter.sort(alphabeticComperator);
-        //this.listViewAdapter.sort(undonedoneComperator);
+        this.listViewAdapter.sort(undonedoneComperator);
         listViewAdapter.notifyDataSetChanged();
         listView.setAdapter(listViewAdapter);
         listView.invalidateViews();
