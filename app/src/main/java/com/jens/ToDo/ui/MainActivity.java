@@ -105,9 +105,9 @@ public class MainActivity extends AppCompatActivity {
             if (requestCode == CALL_DETAILVIEW_FOR_CREATE && resultCode == DetailViewActivity.STATUS_CREATED) {
 
                 try {
-                    selectedItem = (ToDo) data.getSerializableExtra("ToDo");
+                    selectedItem = (ToDo) data.getSerializableExtra("ToDoItem");
                     //long itemid = Long.parseLong(data.getStringExtra(NewTodoActivity.ARG_ITEM_ID));
-
+                    this.dbItemList.add(selectedItem);
                     updateSort();
                 } catch (Exception e) {
                 }
@@ -138,11 +138,12 @@ public class MainActivity extends AppCompatActivity {
                     // Semesterprojekt
                     boolean deleted = (Boolean) data.getSerializableExtra("success");
 
-                    ToDo itemToRemoveFromList = (ToDo) data.getSerializableExtra("ToDo");
+                    ToDo itemToRemoveFromList = (ToDo) data.getSerializableExtra("ToDoItem");
                     this.listViewAdapter.clear();
-                    this.dbItemList.removeIf(currentItem -> currentItem.getId() == itemToRemoveFromList.getId());
+                    this.dbItemList.removeIf(currentItem -> currentItem.getId().equals(itemToRemoveFromList.getId()));
 
                     this.listViewAdapter.addAll(dbItemList);
+
                     //this.dbItemList.add(itemToRemoveFromList);
                     updateSort();
                     if (deleted) {
@@ -238,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
         listView.invalidateViews();
         listView.refreshDrawableState();
     }
+
     private void editToDoToList(ToDo d1) {
         //TODO Kein Refresh, eventuell Object selectedItem wird nur aktualisiert???
 

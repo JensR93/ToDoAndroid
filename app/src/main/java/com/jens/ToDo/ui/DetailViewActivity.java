@@ -161,7 +161,7 @@ public class DetailViewActivity extends AppCompatActivity {
     private void deleteDataItem() {
         Intent returnIntent = new Intent();
         new DeleteItemTask(this.crudOperations).run(selectedItem.getId(), success -> {
-            returnIntent.putExtra("dataitem", selectedItem);
+            returnIntent.putExtra("ToDoItem", selectedItem);
             returnIntent.putExtra("success", success);
             setResult(STATUS_DELETED, returnIntent);
             setContentView(R.layout.activity_main);
