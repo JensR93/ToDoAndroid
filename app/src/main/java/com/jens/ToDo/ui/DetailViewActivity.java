@@ -20,6 +20,7 @@ import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoApplication;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.tasks.DeleteItemTask;
+import com.jens.ToDo.model.tasks.UpdateItemTask;
 
 public class DetailViewActivity extends AppCompatActivity {
 
@@ -176,33 +177,19 @@ public class DetailViewActivity extends AppCompatActivity {
         if (itemId != -1 && selectedItem != null) {
             selectedItem.setName(inputDescription.getText().toString());
             selectedItem.setDescription(inputID.getText().toString());
-            new Thread(() -> {
-                crudOperations.updateItem(selectedItem);
-                runOnUiThread(() -> {
-                    returnIntent.putExtra("test123", selectedItem.getDescription());
+            new UpdateItemTask(crudOperations).run(selectedItem, updated -> {
+
+                if(updated){
+                    returnIntent.putExtra(ARG_ITEM_ID, selectedItem.getId());
 
                     returnIntent.putExtra("dataitem", selectedItem);
-
-                    returnIntent.putExtra(ARG_ITEM_ID, selectedItem.getId());
-                    setResult(STATUS_EDITED, returnIntent);
+                    setResult(STATUS_EDITED,returnIntent);
                     setContentView(R.layout.activity_main);
-                    finish();
-                });
 
-            }).start();
-//            new UpdateItemTask(crudOperations).run(selectedItem,updated -> {
-//
-//                if(updated){
-//                    returnIntent.putExtra(ARG_ITEM_ID, selectedItem.getId());
-//
-//                    returnIntent.putExtra("dataitem", selectedItem);
-//                    setResult(STATUS_EDITED,returnIntent);
-//                    setContentView(R.layout.activity_main);
-//
-//                    finish();
-//                }
-//
-//            });
+                    finish();
+                }
+
+            });
         }
         //Create
         else {
