@@ -7,7 +7,7 @@ package com.jens.ToDo.ui;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatCheckBox;
-
+import java.sql.Timestamp;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -28,6 +28,8 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
+
+import java.sql.Timestamp;
 import com.jens.ToDo.R;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoApplication;
@@ -35,10 +37,12 @@ import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.tasks.DeleteItemTask;
 import com.jens.ToDo.model.tasks.UpdateItemTask;
 
-import java.security.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
@@ -60,7 +64,7 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
     IToDoCRUDOperations crudOperations;
 
     ToDo selectedItem;
-    MenuItem saveMenuItem;
+    MenuItem saveMenuItem, deleteMenuItem;
 
 
     int mYear, mMonth, mDay, mHour, mMinute;
@@ -74,7 +78,7 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
     public static final String ARG_ITEM_ID = "itemID";
     private static final String LOGGING_TAG = DetailViewActivity.class.getSimpleName();
     //endregion
-
+    long itemId;
 
     //wird beim ersten Start aufgerufen
     @Override
@@ -86,14 +90,16 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
         crudOperations = ((ToDoApplication) getApplication()).getCRUDOperations();
 
         // Intent von MainActivity speichern
-        long itemId = getIntent().getLongExtra(ARG_ITEM_ID, -1);
-        if (itemId != -1) {
-            loadToDoObject(itemId);
-        }
+        itemId = getIntent().getLongExtra(ARG_ITEM_ID, -1);
+
         CreateListener();
 
         inputDueTime.setOnClickListener(this);
         inputDueDate.setOnClickListener(this);
+
+        if (itemId != -1) {
+            loadToDoObject(itemId);
+        }
     }
 
     @Override
@@ -167,10 +173,23 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
     public boolean onCreateOptionsMenu(Menu menu) {
 
         getMenuInflater().inflate(R.menu.detailview_menu,menu);
-
         saveMenuItem = menu.findItem(R.id.saveItem);
-        saveMenuItem.setEnabled(false);
-        saveMenuItem.getIcon().setAlpha(100);
+        deleteMenuItem = menu.findItem(R.id.deleteItem);
+
+        if (itemId != -1) {
+            loadToDoObject(itemId);
+            deleteMenuItem.setEnabled(true);
+            deleteMenuItem.getIcon().setAlpha(255);
+        }
+
+        else {
+            deleteMenuItem.setEnabled(false);
+            deleteMenuItem.getIcon().setAlpha(0);
+        }
+        saveMenuItem.setEnabled(true);
+        saveMenuItem.getIcon().setAlpha(255);
+
+
         return true;
     }
     @Override
@@ -204,7 +223,6 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
         }
     }
     private void findElements() {
-        fab = findViewById(R.id.fab);
         inputName = findViewById(R.id.inputID);
         inputDescription = findViewById(R.id.inputName);
         inputID = findViewById(R.id.inputDescription);
@@ -228,20 +246,29 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
                 if(dataItem!=null){
                     inputDescription.setText(dataItem.getName());
                     inputID.setText(dataItem.getDescription());
+                    checkDone.setChecked(dataItem.isDone());
+                    checkFavourite.setChecked(dataItem.isFavourite());
+
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
+
+
+
+                    LocalDateTime date =
+                            LocalDateTime.ofInstant(Instant.ofEpochMilli(dataItem.getExpiry()), ZoneId.systemDefault());
+
+                    //LocalDate localDate = date.toLocalDate();
+                    LocalTime localTime = date.toLocalTime();
+
+                    String localDateString = formatter.format(date);
+                    inputDueDate.setText(localDateString);
+                    inputDueTime.setText(localTime.toString());
                 }
             }
         }.execute(itemId);
     }
 
     private void CreateListener(){
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                saveDataItem();
-
-            }
-        });
         inputName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -325,6 +352,17 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
         if (itemId != -1 && selectedItem != null) {
             selectedItem.setName(inputDescription.getText().toString());
             selectedItem.setDescription(inputID.getText().toString());
+            selectedItem.setFavourite(checkFavourite.isChecked());
+            selectedItem.setDone(checkDone.isChecked());
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
+            LocalDate datePart = LocalDate.parse(inputDueDate.getText(),formatter);
+            LocalTime timePart = LocalTime.parse(inputDueTime.getText());
+            LocalDateTime dt = LocalDateTime.of(datePart, timePart);
+
+            long longDateTimeValue = dt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            selectedItem.setExpiry(longDateTimeValue);
+
             new UpdateItemTask(crudOperations).run(selectedItem, updated -> {
 
                 if(updated){
@@ -350,13 +388,16 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
                 toDoElementToCreate.setDescription(inpDescription);
                 toDoElementToCreate.setDone(checkDone.isChecked());
                 toDoElementToCreate.setFavourite(checkFavourite.isChecked());
-                Date date = new Date();
-                Long tsLong = System.currentTimeMillis()/1000;
-                //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
-                //LocalDate datePart = LocalDate.parse(inputDueDate.getText(),formatter);
-                //LocalTime timePart = LocalTime.parse(inputDueTime.getText());
-                //LocalDateTime dt = LocalDateTime.of(datePart, timePart);
-                toDoElementToCreate.setExpiry(tsLong);
+
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
+                LocalDate datePart = LocalDate.parse(inputDueDate.getText(),formatter);
+                LocalTime timePart = LocalTime.parse(inputDueTime.getText());
+                LocalDateTime dt = LocalDateTime.of(datePart, timePart);
+
+                long longDateTimeValue = dt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                toDoElementToCreate.setExpiry(longDateTimeValue);
+
 
                 new Thread(() -> {
                     selectedItem = crudOperations.createItem(toDoElementToCreate);

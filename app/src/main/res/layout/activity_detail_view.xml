@@ -58,9 +58,4 @@
         android:enabled="false"
         android:id="@+id/inputID">
     </com.google.android.material.textfield.TextInputEditText>
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-    </com.google.android.material.floatingactionbutton.FloatingActionButton>
 </LinearLayout>
