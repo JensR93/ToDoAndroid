@@ -223,9 +223,9 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
         }
     }
     private void findElements() {
-        inputName = findViewById(R.id.inputID);
-        inputDescription = findViewById(R.id.inputName);
-        inputID = findViewById(R.id.inputDescription);
+        inputName = findViewById(R.id.inputName);
+        inputDescription = findViewById(R.id.inputDescription);
+        inputID = findViewById(R.id.inputID);
         inputDueDate = findViewById(R.id.inputDueDate);
         inputDueTime = findViewById(R.id.inputDueTime);
         checkDone = findViewById(R.id.inputDone);
@@ -244,11 +244,12 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
             protected void onPostExecute(ToDo dataItem) {
                 super.onPostExecute(dataItem);
                 if(dataItem!=null){
-                    inputDescription.setText(dataItem.getName());
-                    inputID.setText(dataItem.getDescription());
+                    inputDescription.setText(dataItem.getDescription());
+                    inputID.setText(dataItem.getId().toString());
                     checkDone.setChecked(dataItem.isDone());
                     checkFavourite.setChecked(dataItem.isFavourite());
 
+                    inputName.setText(dataItem.getName());
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
 
 
@@ -280,17 +281,7 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
                 return false;
             }
         });
-        inputID.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId== EditorInfo.IME_ACTION_NEXT || actionId==EditorInfo.IME_ACTION_DONE){
-                    if(inputName.getText().length()>0){
-                        enableSaveButton();
-                    }
-                }
-                return false;
-            }
-        });
+
         inputDescription.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -345,13 +336,13 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
     private void saveDataItem() {
         long itemId = getIntent().getLongExtra(ARG_ITEM_ID, -1);
         Intent returnIntent = new Intent();
-        String inpName = inputDescription.getText().toString();
-        String inpDescription = inputID.getText().toString();
+        String inpName = inputName.getText().toString();
+        String inpDescription = inputDescription.getText().toString();
 
         //EDIT
         if (itemId != -1 && selectedItem != null) {
-            selectedItem.setName(inputDescription.getText().toString());
-            selectedItem.setDescription(inputID.getText().toString());
+            selectedItem.setName(inputName.getText().toString());
+            selectedItem.setDescription(inputDescription.getText().toString());
             selectedItem.setFavourite(checkFavourite.isChecked());
             selectedItem.setDone(checkDone.isChecked());
 
