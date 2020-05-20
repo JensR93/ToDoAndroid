@@ -27,4 +27,5 @@
     <string name="settingsSettings">Einstellungen</string>
     <string name="settingsConnected">Datenbank verbindung hergestellt</string>
     <string name="settingsDeleteAllTodos">Lösche alle ToDos</string>
+    <string name="detailHintImportContacts">Kontakte importieren</string>
 </resources>

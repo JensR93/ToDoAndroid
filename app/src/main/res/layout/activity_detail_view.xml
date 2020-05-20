@@ -50,6 +50,14 @@
         android:focusable="false"
         android:hint="@string/dueTime">
     </EditText>
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:textSize="24dp"
+        android:hint="@string/detailHintImportContacts"
+        android:id="@+id/textImportContacts"
+        >
+    </androidx.appcompat.widget.AppCompatTextView>
     <com.google.android.material.textfield.TextInputEditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

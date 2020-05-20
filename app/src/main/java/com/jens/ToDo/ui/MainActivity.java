@@ -119,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
     // data = Daten
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
         if (data != null) {
             if (requestCode == CALL_DETAILVIEW_FOR_CREATE && resultCode == DetailViewActivity.STATUS_CREATED) {
 
