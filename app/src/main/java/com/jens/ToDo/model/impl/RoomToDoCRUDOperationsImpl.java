@@ -56,4 +56,13 @@ public class RoomToDoCRUDOperationsImpl implements IToDoCRUDOperations {
         }
         return true;
     }
+
+    @Override
+    public boolean deleteAllItems() {
+        if(toToDao.deleteAll()>=0)
+            return true;
+
+        return false;
+
+    }
 }

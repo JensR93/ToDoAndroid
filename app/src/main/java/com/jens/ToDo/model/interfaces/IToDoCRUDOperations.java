@@ -10,4 +10,5 @@ public interface IToDoCRUDOperations {
     public ToDo readItem(long id);
     public boolean updateItem(ToDo item);
     public boolean deleteItem(long id);
+    public boolean deleteAllItems();
 }

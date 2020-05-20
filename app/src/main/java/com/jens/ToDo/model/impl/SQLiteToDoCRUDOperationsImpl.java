@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class SQLiteToDoCRUDOperationsImpl  implements IToDoCRUDOperations {
+
+
     /**
      * the logger
      */
@@ -150,7 +152,16 @@ public class SQLiteToDoCRUDOperationsImpl  implements IToDoCRUDOperations {
         return true;
     }
 
+    @Override
+    public boolean deleteAllItems() {
+        Log.i(logger, "removeAllItemFromDb(): ");
 
+        // we first delete the item
+        this.db.delete(TABNAME,null,null);
+
+        Log.i(logger, "deleteToDo(): deletion in db done");
+        return false;
+    }
 
     /*
      * helper methods

@@ -1,11 +1,17 @@
 package com.jens.ToDo.ui;
+/**
+ * @author Jens
+ *
+ */
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatCheckBox;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -18,6 +24,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -68,6 +75,8 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
     private static final String LOGGING_TAG = DetailViewActivity.class.getSimpleName();
     //endregion
 
+
+    //wird beim ersten Start aufgerufen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,6 +94,28 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
 
         inputDueTime.setOnClickListener(this);
         inputDueDate.setOnClickListener(this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    // Beim schließen, wegswipen / über Taskmanager schließen
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    // Aufruf wenn nicht mehr im Hintergrund
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     @Override
@@ -150,7 +181,22 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
             return  true;
         }
         if(item.getItemId()==R.id.deleteItem){
-            deleteDataItem();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Wirklich löschen?");
+            builder.setPositiveButton("Löschen", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    deleteDataItem();
+                }
+            });
+            builder.setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Toast.makeText(DetailViewActivity.this,"Abbuch",Toast.LENGTH_SHORT).show();
+                }
+            });
+            builder.create().show();
+
             return  true;
         }
         else{

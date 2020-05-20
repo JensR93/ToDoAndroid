@@ -61,7 +61,8 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton floatingActionButton;
     private ArrayAdapter<ToDo> listViewAdapter;
     private Intent newTodoIntent;
-    //private ToDoDatabase db;
+
+    private Intent settingsIntent;    //private ToDoDatabase db;
     private IToDoCRUDOperations crudOperations;
     private ToDo selectedItem;
     List<ToDo> dbItemList = null;
@@ -77,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
         findElements();
         createListener();
         listViewAdapter = createListViewAdapter();
+
+
         new CheckRemoteAvailableTask().run(available -> {
             ((ToDoApplication) getApplication()).setRemoteCRUDMode(available);
             if(available)
@@ -103,8 +106,14 @@ public class MainActivity extends AppCompatActivity {
             showContacts();
             return true;
         }
+        if(item.getItemId()==R.id.showSettings){
+            showSettings();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
+
+
     // requestCode = Von welchem Aufruf komme ich zurpck
     // result = Ergebnis (OK / Fehler)
     // data = Daten
@@ -356,5 +365,10 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(contactIntent, CALL_CONTACT_PICK);
     }
 
+    private void showSettings() {
+
+        settingsIntent = new Intent(this, SettingsActivity.class);
+        startActivity(settingsIntent);
+    }
     //endregion
 }

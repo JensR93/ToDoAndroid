@@ -24,6 +24,11 @@ public interface ToDoDao {
     @Delete
     public void delete(ToDo item);
 
+    @Query("DELETE FROM ToDo")
+    public int deleteAll();
+
     @Update
     public void update(ToDo item);
+
+
 }

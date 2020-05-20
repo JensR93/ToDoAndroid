@@ -49,4 +49,13 @@ public class SyncedToDoCrudOperations implements IToDoCRUDOperations {
         }
         return false;
     }
+
+    @Override
+    public boolean deleteAllItems() {
+        if(localCrud.deleteAllItems()){
+            remoteCrud.deleteAllItems();
+            return  true;
+        }
+        return false;
+    }
 }

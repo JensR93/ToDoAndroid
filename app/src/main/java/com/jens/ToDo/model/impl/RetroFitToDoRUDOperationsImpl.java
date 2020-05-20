@@ -92,6 +92,19 @@ public class RetroFitToDoRUDOperationsImpl implements IToDoCRUDOperations {
         return false;
     }
 
+    @Override
+    public boolean deleteAllItems() {
+        try {
+            if( webAPIClient.deleteAllItems().execute().body()!=null){
+                return true;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
+    }
+
 
     public static interface ToDoWebAPI {
         @POST("/api/todos")
