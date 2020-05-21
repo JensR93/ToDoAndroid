@@ -1,7 +1,6 @@
 package com.jens.ToDo.ui;
 /**
  * @author Jens
- *
  */
 
 import androidx.annotation.NonNull;
@@ -54,7 +53,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 
-public class DetailViewActivity extends AppCompatActivity  implements View.OnClickListener{
+public class DetailViewActivity extends AppCompatActivity implements View.OnClickListener {
 
 
     //region Variable
@@ -151,7 +150,7 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
                         public void onDateSet(DatePicker view, int year,
                                               int monthOfYear, int dayOfMonth) {
 
-                            inputDueDate.setText(String.format("%02d.%02d.%04d", dayOfMonth, monthOfYear+1,year));
+                            inputDueDate.setText(String.format("%02d.%02d.%04d", dayOfMonth, monthOfYear + 1, year));
 
                         }
                     }, mYear, mMonth, mDay);
@@ -182,7 +181,7 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        getMenuInflater().inflate(R.menu.detailview_menu,menu);
+        getMenuInflater().inflate(R.menu.detailview_menu, menu);
         saveMenuItem = menu.findItem(R.id.saveItem);
         deleteMenuItem = menu.findItem(R.id.deleteItem);
 
@@ -190,9 +189,7 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
             loadToDoObject(itemId);
             deleteMenuItem.setEnabled(true);
             deleteMenuItem.getIcon().setAlpha(255);
-        }
-
-        else {
+        } else {
             deleteMenuItem.setEnabled(false);
             deleteMenuItem.getIcon().setAlpha(0);
         }
@@ -202,9 +199,10 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
 
         return true;
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CALL_CONTACT_PICK && resultCode == Activity.RESULT_OK) {
             Log.i(getClass().getSimpleName(), "got intent from contact picker" + data);
             showContactDetails(data.getData());
@@ -214,11 +212,11 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        if(item.getItemId()==R.id.saveItem){
+        if (item.getItemId() == R.id.saveItem) {
             saveDataItem();
-            return  true;
+            return true;
         }
-        if(item.getItemId()==R.id.deleteItem){
+        if (item.getItemId() == R.id.deleteItem) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Wirklich löschen?");
             builder.setPositiveButton("Löschen", new DialogInterface.OnClickListener() {
@@ -230,17 +228,17 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
             builder.setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    Toast.makeText(DetailViewActivity.this,"Abbuch",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DetailViewActivity.this, "Abbuch", Toast.LENGTH_SHORT).show();
                 }
             });
             builder.create().show();
 
-            return  true;
-        }
-        else{
+            return true;
+        } else {
             return super.onOptionsItemSelected(item);
         }
     }
+
     private void findElements() {
         inputName = findViewById(R.id.inputName);
         inputDescription = findViewById(R.id.inputDescription);
@@ -263,7 +261,7 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
             @Override
             protected void onPostExecute(ToDo dataItem) {
                 super.onPostExecute(dataItem);
-                if(dataItem!=null){
+                if (dataItem != null) {
                     inputDescription.setText(dataItem.getDescription());
                     inputID.setText(dataItem.getId().toString());
                     checkDone.setChecked(dataItem.isDone());
@@ -272,32 +270,31 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
                     inputName.setText(dataItem.getName());
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
 
-if(dataItem.getExpiry()!=null){
+                    if (dataItem.getExpiry() != null) {
 
 
+                        LocalDateTime date =
+                                LocalDateTime.ofInstant(Instant.ofEpochMilli(dataItem.getExpiry()), ZoneId.systemDefault());
 
-                    LocalDateTime date =
-                            LocalDateTime.ofInstant(Instant.ofEpochMilli(dataItem.getExpiry()), ZoneId.systemDefault());
+                        //LocalDate localDate = date.toLocalDate();
+                        LocalTime localTime = date.toLocalTime();
 
-                    //LocalDate localDate = date.toLocalDate();
-                    LocalTime localTime = date.toLocalTime();
-
-                    String localDateString = formatter.format(date);
-                    inputDueDate.setText(localDateString);
-                    inputDueTime.setText(localTime.toString());
-                }
+                        String localDateString = formatter.format(date);
+                        inputDueDate.setText(localDateString);
+                        inputDueTime.setText(localTime.toString());
+                    }
                 }
             }
         }.execute(itemId);
     }
 
-    private void CreateListener(){
+    private void CreateListener() {
 
         inputName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId== EditorInfo.IME_ACTION_NEXT || actionId==EditorInfo.IME_ACTION_DONE){
-                    if(inputName.getText().length()>0){
+                if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
+                    if (inputName.getText().length() > 0) {
                         enableSaveButton();
                     }
                 }
@@ -308,8 +305,8 @@ if(dataItem.getExpiry()!=null){
         inputDescription.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId== EditorInfo.IME_ACTION_NEXT || actionId==EditorInfo.IME_ACTION_DONE){
-                    if(inputName.getText().length()>0){
+                if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
+                    if (inputName.getText().length() > 0) {
                         enableSaveButton();
                     }
                 }
@@ -319,8 +316,8 @@ if(dataItem.getExpiry()!=null){
         checkFavourite.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId== EditorInfo.IME_ACTION_NEXT || actionId==EditorInfo.IME_ACTION_DONE){
-                    if(inputName.getText().length()>0){
+                if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
+                    if (inputName.getText().length() > 0) {
                         enableSaveButton();
                     }
                 }
@@ -330,15 +327,15 @@ if(dataItem.getExpiry()!=null){
         checkDone.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId== EditorInfo.IME_ACTION_NEXT || actionId==EditorInfo.IME_ACTION_DONE){
-                    if(inputName.getText().length()>0){
+                if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
+                    if (inputName.getText().length() > 0) {
                         enableSaveButton();
                     }
                 }
                 return false;
             }
         });
-        textImportContacts.setOnClickListener(new TextView.OnClickListener(){
+        textImportContacts.setOnClickListener(new TextView.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -350,10 +347,12 @@ if(dataItem.getExpiry()!=null){
 
 
     }
+
     private void enableSaveButton() {
         saveMenuItem.getIcon().setAlpha(255);
         saveMenuItem.setEnabled(true);
     }
+
     private void deleteDataItem() {
         Intent returnIntent = new Intent();
         new DeleteItemTask(this.crudOperations).run(selectedItem.getId(), success -> {
@@ -365,6 +364,7 @@ if(dataItem.getExpiry()!=null){
         });
 
     }
+
     private void saveDataItem() {
         long itemId = getIntent().getLongExtra(ARG_ITEM_ID, -1);
         Intent returnIntent = new Intent();
@@ -379,7 +379,7 @@ if(dataItem.getExpiry()!=null){
             selectedItem.setDone(checkDone.isChecked());
 
 
-            if(!inputDueDate.getText().toString().equals("")||!inputDueTime.getText().toString().equals("")) {
+            if (!inputDueDate.getText().toString().equals("") || !inputDueTime.getText().toString().equals("")) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
                 LocalDate datePart = LocalDate.parse(inputDueDate.getText(), formatter);
                 LocalTime timePart = LocalTime.parse(inputDueTime.getText());
@@ -390,11 +390,11 @@ if(dataItem.getExpiry()!=null){
             }
             new UpdateItemTask(crudOperations).run(selectedItem, updated -> {
 
-                if(updated){
+                if (updated) {
                     returnIntent.putExtra(ARG_ITEM_ID, selectedItem.getId());
 
                     returnIntent.putExtra("ToDoItem", selectedItem);
-                    setResult(STATUS_EDITED,returnIntent);
+                    setResult(STATUS_EDITED, returnIntent);
                     setContentView(R.layout.activity_main);
 
                     finish();
@@ -416,16 +416,13 @@ if(dataItem.getExpiry()!=null){
 
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
-                if(!inputDueDate.getText().toString().equals("")||!inputDueTime.getText().toString().equals("")){
-                    LocalDate datePart = LocalDate.parse(inputDueDate.getText(),formatter);
+                if (!inputDueDate.getText().toString().equals("") || !inputDueTime.getText().toString().equals("")) {
+                    LocalDate datePart = LocalDate.parse(inputDueDate.getText(), formatter);
                     LocalTime timePart = LocalTime.parse(inputDueTime.getText());
                     LocalDateTime dt = LocalDateTime.of(datePart, timePart);
                     long longDateTimeValue = dt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
                     toDoElementToCreate.setExpiry(longDateTimeValue);
                 }
-
-
-
 
 
                 new Thread(() -> {
@@ -459,7 +456,7 @@ if(dataItem.getExpiry()!=null){
             String contactId = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
 
             Log.i(LOGGING_TAG, String.format("contactName: %s", contactName));
-            textImportContacts.setText(textImportContacts.getText()+"\n"+contactName);
+            textImportContacts.setText(textImportContacts.getText() + "\n" + contactName);
 
             Log.i(LOGGING_TAG, String.format("contactID: %s", contactId));
 
@@ -472,7 +469,7 @@ if(dataItem.getExpiry()!=null){
                         ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                         null,
                         ContactsContract.CommonDataKinds.Phone.CONTACT_ID
-                                + " = ?", new String[] { contactId }, null);
+                                + " = ?", new String[]{contactId}, null);
                 while (pCur.moveToNext()) {
                     // Do something with phones
                     String phoneNo = pCur
@@ -493,7 +490,7 @@ if(dataItem.getExpiry()!=null){
 
                         SmsManager smsManager = SmsManager.getDefault();
                         String sms = "smsText.getText().toString()";
-                       // smsManager.sendTextMessage("012345", null, sms, null, null);
+                        // smsManager.sendTextMessage("012345", null, sms, null, null);
 //Send the SMS//
 
                         String defaultSmsPackageName = Telephony.Sms.getDefaultSmsPackage(this); // Need to change the build to API 19
@@ -512,7 +509,7 @@ if(dataItem.getExpiry()!=null){
 //                        startActivity(sendIntent);
 
                         Intent email = new Intent(Intent.ACTION_SEND);
-                        email.putExtra(Intent.EXTRA_EMAIL, new String[]{ email2});
+                        email.putExtra(Intent.EXTRA_EMAIL, new String[]{email2});
                         email.putExtra(Intent.EXTRA_SUBJECT, "subject");
                         email.putExtra(Intent.EXTRA_TEXT, "mess");
 
@@ -555,6 +552,7 @@ if(dataItem.getExpiry()!=null){
             }
         }
     }
+
     private boolean verifyReadContactPermission() {
         int hasReadContactsPermission = checkSelfPermission(Manifest.permission.READ_CONTACTS);
         if (hasReadContactsPermission == PackageManager.PERMISSION_GRANTED) {

@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
     //region Constants
     public static final int CALL_DETAILVIEW_FOR_CREATE = 0;
     public static final int CALL_DETAILVIEW_FOR_EDIT = 1;
-    public static final int CALL_CONTACT_PICK = 2;
     private static final String LOGGING_TAG = DetailViewActivity.class.getSimpleName();
     //endregion
     
@@ -102,10 +101,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.showContacts) {
-            showContacts();
-            return true;
-        }
         if(item.getItemId()==R.id.showSettings){
             showSettings();
             return true;
@@ -172,10 +167,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
             }
-            if (requestCode == CALL_CONTACT_PICK && resultCode == Activity.RESULT_OK) {
-                Log.i(getClass().getSimpleName(), "got intent from contact picker" + data);
-                showContactDetails(data.getData());
-            }
+
         }
     }
     
@@ -291,80 +283,6 @@ public class MainActivity extends AppCompatActivity {
 
     //region Contacts
 
-    private void showContactDetails(Uri contactUri) {
-        Log.i(LOGGING_TAG, String.format("got contactURI: %s", contactUri));
-        Cursor contactsCursor = getContentResolver().query(contactUri, null, null, null);
-        if (contactsCursor.moveToFirst()) {
-            String contactName = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-            String contactId = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
-
-            Log.i(LOGGING_TAG, String.format("contactName: %s", contactName));
-            Log.i(LOGGING_TAG, String.format("contactID: %s", contactId));
-
-            if (verifyReadContactPermission()) {
-                Cursor phoneCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?", new String[]{contactId}, null);
-
-
-                Cursor pCur = getContentResolver().query(
-                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                        null,
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID
-                                + " = ?", new String[] { contactId }, null);
-                while (pCur.moveToNext()) {
-                    // Do something with phones
-                    String phoneNo = pCur
-                            .getString(pCur
-                                    .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-
-                    //nameList.add(name); // Here you can list of contact.
-                    //phoneList.add(phoneNo); // Here you will get list of phone number.
-
-
-                    Cursor emailCur = getContentResolver().query(
-                            ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-                            null,
-                            ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
-                            new String[]{contactId}, null);
-                    while (emailCur.moveToNext()) {
-                        String email = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-
-                        //emailList.add(email); // Here you will get list of email
-
-                    }
-                    emailCur.close();
-                }
-
-
-                if (contactsCursor.moveToFirst()) {
-                    do {
-                        String phoneNumber = String.valueOf(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        int phoneNumberType = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DATA2);
-                        Log.i(LOGGING_TAG, String.format("phoneNumber: %s", phoneNumber));
-                        Log.i(LOGGING_TAG, String.format("phoneNumberType: %s", phoneNumberType));
-                        if (phoneNumberType == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) {
-
-                            Log.i(LOGGING_TAG, String.format("Found mobileNumber: %s", phoneNumber));
-                        }
-                    }
-                    while (phoneCursor.moveToNext());
-                }
-            }
-        }
-    }
-    private boolean verifyReadContactPermission() {
-        int hasReadContactsPermission = checkSelfPermission(Manifest.permission.READ_CONTACTS);
-        if (hasReadContactsPermission == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        } else {
-            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 4);
-            return false;
-        }
-    }
-    private void showContacts() {
-        Intent contactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
-        startActivityForResult(contactIntent, CALL_CONTACT_PICK);
-    }
 
     private void showSettings() {
 

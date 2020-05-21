@@ -80,6 +80,6 @@ public class ToDo implements Serializable {
     }*/
     @Override
     public String toString() {
-        return name + ", description=" + description+"("+id+", ready = "+done+")";
+        return name ;
     }
 }
