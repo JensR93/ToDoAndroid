@@ -22,6 +22,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.Telephony;
+import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -270,6 +272,8 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
                     inputName.setText(dataItem.getName());
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
 
+if(dataItem.getExpiry()!=null){
+
 
 
                     LocalDateTime date =
@@ -281,6 +285,7 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
                     String localDateString = formatter.format(date);
                     inputDueDate.setText(localDateString);
                     inputDueTime.setText(localTime.toString());
+                }
                 }
             }
         }.execute(itemId);
@@ -373,14 +378,16 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
             selectedItem.setFavourite(checkFavourite.isChecked());
             selectedItem.setDone(checkDone.isChecked());
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
-            LocalDate datePart = LocalDate.parse(inputDueDate.getText(),formatter);
-            LocalTime timePart = LocalTime.parse(inputDueTime.getText());
-            LocalDateTime dt = LocalDateTime.of(datePart, timePart);
 
-            long longDateTimeValue = dt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-            selectedItem.setExpiry(longDateTimeValue);
+            if(!inputDueDate.getText().toString().equals("")||!inputDueTime.getText().toString().equals("")) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
+                LocalDate datePart = LocalDate.parse(inputDueDate.getText(), formatter);
+                LocalTime timePart = LocalTime.parse(inputDueTime.getText());
+                LocalDateTime dt = LocalDateTime.of(datePart, timePart);
 
+                long longDateTimeValue = dt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                selectedItem.setExpiry(longDateTimeValue);
+            }
             new UpdateItemTask(crudOperations).run(selectedItem, updated -> {
 
                 if(updated){
@@ -409,12 +416,16 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
 
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
-                LocalDate datePart = LocalDate.parse(inputDueDate.getText(),formatter);
-                LocalTime timePart = LocalTime.parse(inputDueTime.getText());
-                LocalDateTime dt = LocalDateTime.of(datePart, timePart);
+                if(!inputDueDate.getText().toString().equals("")||!inputDueTime.getText().toString().equals("")){
+                    LocalDate datePart = LocalDate.parse(inputDueDate.getText(),formatter);
+                    LocalTime timePart = LocalTime.parse(inputDueTime.getText());
+                    LocalDateTime dt = LocalDateTime.of(datePart, timePart);
+                    long longDateTimeValue = dt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                    toDoElementToCreate.setExpiry(longDateTimeValue);
+                }
 
-                long longDateTimeValue = dt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                toDoElementToCreate.setExpiry(longDateTimeValue);
+
+
 
 
                 new Thread(() -> {
@@ -449,6 +460,7 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
 
             Log.i(LOGGING_TAG, String.format("contactName: %s", contactName));
             textImportContacts.setText(textImportContacts.getText()+"\n"+contactName);
+
             Log.i(LOGGING_TAG, String.format("contactID: %s", contactId));
 
             if (verifyReadContactPermission()) {
@@ -477,8 +489,49 @@ public class DetailViewActivity extends AppCompatActivity  implements View.OnCli
                             ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
                             new String[]{contactId}, null);
                     while (emailCur.moveToNext()) {
-                        String email = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+                        String email2 = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
 
+                        SmsManager smsManager = SmsManager.getDefault();
+                        String sms = "smsText.getText().toString()";
+                       // smsManager.sendTextMessage("012345", null, sms, null, null);
+//Send the SMS//
+
+                        String defaultSmsPackageName = Telephony.Sms.getDefaultSmsPackage(this); // Need to change the build to API 19
+
+//                        Intent sendIntent = new Intent(Intent.ACTION_SENDTO);
+//                        sendIntent.setType("text/plain");
+//                        sendIntent.putExtra(Intent.EXTRA_TEXT, "text");
+//                        sendIntent.setData(Uri.parse("sms:" + phoneNo));
+//                        sendIntent.putExtra(Intent.EXTRA_UID,  ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+
+//                        if (defaultSmsPackageName != null)// Can be null in case that there is no default, then the user would be able to choose
+//                        // any app that support this intent.
+//                        {
+//                            sendIntent.setPackage(defaultSmsPackageName);
+//                        }
+//                        startActivity(sendIntent);
+
+                        Intent email = new Intent(Intent.ACTION_SEND);
+                        email.putExtra(Intent.EXTRA_EMAIL, new String[]{ email2});
+                        email.putExtra(Intent.EXTRA_SUBJECT, "subject");
+                        email.putExtra(Intent.EXTRA_TEXT, "mess");
+
+//need this to prompts email client only
+
+                        //sendIntent.setType("vnd.android-dir/mms-sms/");
+
+                        //startActivity(Intent.createChooser(sendIntent, "Choose an Email client :"));
+
+                        Intent intent = new Intent(Intent.ACTION_SENDTO);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.setData(Uri.parse("smsto:" + phoneNo)); // This ensures only SMS apps respond
+                        intent.putExtra("sms_body", "Hey it works :) New todo ");
+                        startActivity(intent);
+
+
+                        email.setType("message/rfc822");
+
+                        //startActivity(Intent.createChooser(email, "Choose an Email client :"));
                         //emailList.add(email); // Here you will get list of email
 
                     }
