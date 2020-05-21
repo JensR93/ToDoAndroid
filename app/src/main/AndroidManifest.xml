@@ -16,10 +16,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.SettingsActivity"
+            android:name=".ui.Activity.SettingsActivity"
             android:label="@string/title_activity_settings"></activity>
-        <activity android:name=".ui.DetailViewActivity" />
-        <activity android:name=".ui.MainActivity">
+        <activity android:name=".ui.Activity.DetailView.DetailViewActivity" />
+        <activity android:name=".ui.Activity.Main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

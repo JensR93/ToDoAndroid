@@ -1,4 +1,4 @@
-package com.jens.ToDo.ui;
+package com.jens.ToDo.ui.Activity;
 
 import android.os.Bundle;
 import android.view.View;
@@ -13,7 +13,6 @@ import com.jens.ToDo.model.ToDoApplication;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.tasks.CheckRemoteAvailableTask;
 import com.jens.ToDo.model.tasks.DeleteAllItemTask;
-import com.jens.ToDo.model.tasks.DeleteItemTask;
 
 public class SettingsActivity extends AppCompatActivity {
 

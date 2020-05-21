@@ -1,4 +1,4 @@
-package com.jens.ToDo.ui;
+package com.jens.ToDo.ui.Activity.DetailView;
 /**
  * @author Jens
  */
@@ -8,21 +8,15 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatCheckBox;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.provider.Telephony;
-import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -41,6 +35,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.jens.ToDo.R;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoApplication;
+import com.jens.ToDo.model.ToDoContact;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.tasks.DeleteItemTask;
 import com.jens.ToDo.model.tasks.UpdateItemTask;
@@ -53,26 +48,25 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 
-public class DetailViewActivity extends AppCompatActivity implements View.OnClickListener {
+public class DetailViewActivity extends AppCompatActivity implements View.OnClickListener  {
 
 
     //region Variable
 
-    FloatingActionButton fab;
-    TextInputEditText inputName;
-    TextInputEditText inputDescription;
-    TextInputEditText inputID;
-    EditText inputDueDate;
-    EditText inputDueTime;
-    TextView textImportContacts;
-    AppCompatCheckBox checkDone;
-    AppCompatCheckBox checkFavourite;
+    private FloatingActionButton fab;
+    private TextInputEditText inputName;
+    private TextInputEditText inputDescription;
+    private TextInputEditText inputID;
+    private EditText inputDueDate;
+    private EditText inputDueTime;
+    private TextView textImportContacts;
+    private AppCompatCheckBox checkDone;
+    private AppCompatCheckBox checkFavourite;
 
-    IToDoCRUDOperations crudOperations;
+    private IToDoCRUDOperations crudOperations;
 
-    ToDo selectedItem;
-    ToDo toDoElementToCreate;
-    MenuItem saveMenuItem, deleteMenuItem;
+    private ToDo selectedItem;
+    private MenuItem saveMenuItem, deleteMenuItem;
 
 
     int mYear, mMonth, mDay, mHour, mMinute;
@@ -86,9 +80,11 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
     public static final int CALL_CONTACT_PICK = 10;
     public static final String ARG_ITEM_ID = "itemID";
-    private static final String LOGGING_TAG = DetailViewActivity.class.getSimpleName();
+    public static final String LOGGING_TAG = DetailViewActivity.class.getSimpleName();
     //endregion
     long itemId;
+
+
 
     //wird beim ersten Start aufgerufen
     @Override
@@ -110,6 +106,11 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         if (itemId != -1) {
             loadToDoObject(itemId);
         }
+        else{
+            selectedItem=new ToDo();
+        }
+
+
     }
 
     @Override
@@ -206,7 +207,10 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CALL_CONTACT_PICK && resultCode == Activity.RESULT_OK) {
             Log.i(getClass().getSimpleName(), "got intent from contact picker" + data);
-            showContactDetails(data.getData());
+            Contactmanager ccc = new Contactmanager(this);
+            selectedItem = ccc.showAddContactDetails(data.getData(),selectedItem);
+            textImportContacts.setText(selectedItem.getContactStringMultiLine());
+            //textImportContacts.setText(ccc.showAddContactDetails(data.getData(),selectedItem));
         }
     }
 
@@ -252,6 +256,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void loadToDoObject(long itemId) {
+        Contactmanager cccc = new Contactmanager(this);
         new AsyncTask<Long, Void, ToDo>() {
             @Override
             protected ToDo doInBackground(Long... longs) {
@@ -271,40 +276,12 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                     inputName.setText(dataItem.getName());
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
 
-                    for (String stringContactId: dataItem.getContacts()) {
 
-                        final Cursor phoneCursor = getContentResolver().query(
-                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                                new String[] {
-                                        ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                                        ContactsContract.CommonDataKinds.Phone.NUMBER,
-                                        ContactsContract.CommonDataKinds.Phone.PHOTO_URI,
-                                },
-                                ContactsContract.Data.CONTACT_ID + "=?",
-                                new String[] {String.valueOf(stringContactId)}, null);
+                   // textImportContacts.setText(cccc.readContactFromDataItem(dataItem));
 
-                        try {
-                            final int idxAvatarUri = phoneCursor.getColumnIndexOrThrow(
-                                    ContactsContract.CommonDataKinds.Phone.PHOTO_URI);
-                            final int idxName = phoneCursor.getColumnIndexOrThrow(
-                                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
-                            final int idxPhone = phoneCursor.getColumnIndexOrThrow(
-                                    ContactsContract.CommonDataKinds.Phone.NUMBER);
+                    dataItem= cccc.readContactFromDataItem(dataItem);
 
-                            while (phoneCursor.moveToNext()) {
-                                String phoneNumber = phoneCursor.getString(idxPhone);
-                                String name = phoneCursor.getString(idxName);
-                                String avatarUri = phoneCursor.getString(idxAvatarUri);
-                                textImportContacts.setText(textImportContacts.getText()+"\n"+name+"("+stringContactId+")");
-                                Log.d("Details", "Phone number: " + phoneNumber);
-                                Log.d("Details", "Name: " + name);
-                                Log.d("Details", "Avatar URI: " + avatarUri);
-                            }
-                        } finally {
-                            phoneCursor.close();
-                        }
-                    }
-
+                    textImportContacts.setText(dataItem.getContactStringMultiLine());
                     if (dataItem.getExpiry() != null) {
 
 
@@ -318,6 +295,12 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                         inputDueDate.setText(localDateString);
                         inputDueTime.setText(localTime.toString());
                     }
+
+                    //Contactlistitem
+                    ContactListItem contactListItem = new ContactListItem(DetailViewActivity.this,selectedItem);
+
+
+
                 }
             }
         }.execute(itemId);
@@ -426,13 +409,17 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
             new UpdateItemTask(crudOperations).run(selectedItem, updated -> {
 
                 if (updated) {
-                    returnIntent.putExtra(ARG_ITEM_ID, selectedItem.getId());
+                    try{
+                        returnIntent.putExtra(ARG_ITEM_ID, selectedItem.getId());
 
-                    returnIntent.putExtra("ToDoItem", selectedItem);
-                    setResult(STATUS_EDITED, returnIntent);
-                    setContentView(R.layout.activity_main);
+                        returnIntent.putExtra("ToDoItem", selectedItem);
+                        setResult(STATUS_EDITED, returnIntent);
+                        setContentView(R.layout.activity_main);
 
-                    finish();
+                        finish();}
+                    catch (Exception e){
+                        System.out.println(e);
+                    }
                 }
 
             });
@@ -443,14 +430,14 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
                 //TODO: CreateItemTask bauen: Parameter mehrere Strings und nicht das Objekt --> ID != 0
 
-                if(toDoElementToCreate==null)
+                if(selectedItem==null)
                 {
-                    toDoElementToCreate = new ToDo();
+                    selectedItem = new ToDo();
                 }
-                toDoElementToCreate.setName(inpName);
-                toDoElementToCreate.setDescription(inpDescription);
-                toDoElementToCreate.setDone(checkDone.isChecked());
-                toDoElementToCreate.setFavourite(checkFavourite.isChecked());
+                selectedItem.setName(inpName);
+                selectedItem.setDescription(inpDescription);
+                selectedItem.setDone(checkDone.isChecked());
+                selectedItem.setFavourite(checkFavourite.isChecked());
 
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
@@ -459,12 +446,12 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                     LocalTime timePart = LocalTime.parse(inputDueTime.getText());
                     LocalDateTime dt = LocalDateTime.of(datePart, timePart);
                     long longDateTimeValue = dt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    toDoElementToCreate.setExpiry(longDateTimeValue);
+                    selectedItem.setExpiry(longDateTimeValue);
                 }
 
 
                 new Thread(() -> {
-                    selectedItem = crudOperations.createItem(toDoElementToCreate);
+                    selectedItem = crudOperations.createItem(selectedItem);
                     runOnUiThread(() -> {
 
 
@@ -486,130 +473,8 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    private void showContactDetails(Uri contactUri) {
-        Log.i(LOGGING_TAG, String.format("got contactURI: %s", contactUri));
-        Cursor contactsCursor = getContentResolver().query(contactUri, null, null, null);
-        if (contactsCursor.moveToFirst()) {
-            String contactName = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-            String contactId = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
-
-            Log.i(LOGGING_TAG, String.format("contactName: %s", contactName));
-
-            //UI
-            if(toDoElementToCreate==null)
-            {
-                toDoElementToCreate = new ToDo();
-            }
-            if(selectedItem!=null)
-            {
-                selectedItem.addContact(contactId);
-            }
-            toDoElementToCreate.addContact(contactId);
-            textImportContacts.setText(textImportContacts.getText() + "\n" + contactName + "("+contactId+")");
 
 
-            Log.i(LOGGING_TAG, String.format("contactID: %s", contactId));
-
-            if (verifyReadContactPermission()) {
-                Cursor phoneCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?", new String[]{contactId}, null);
 
 
-                Cursor pCur = getContentResolver().query(
-                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                        null,
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID
-                                + " = ?", new String[]{contactId}, null);
-                while (pCur.moveToNext()) {
-                    // Do something with phones
-                    String phoneNo = pCur
-                            .getString(pCur
-                                    .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-
-                    //nameList.add(name); // Here you can list of contact.
-                    //phoneList.add(phoneNo); // Here you will get list of phone number.
-
-
-                    Cursor emailCur = getContentResolver().query(
-                            ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-                            null,
-                            ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
-                            new String[]{contactId}, null);
-                    while (emailCur.moveToNext()) {
-                        String email2 = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-
-                        SmsManager smsManager = SmsManager.getDefault();
-                        String sms = "smsText.getText().toString()";
-                        // smsManager.sendTextMessage("012345", null, sms, null, null);
-//Send the SMS//
-
-                        String defaultSmsPackageName = Telephony.Sms.getDefaultSmsPackage(this); // Need to change the build to API 19
-
-//                        Intent sendIntent = new Intent(Intent.ACTION_SENDTO);
-//                        sendIntent.setType("text/plain");
-//                        sendIntent.putExtra(Intent.EXTRA_TEXT, "text");
-//                        sendIntent.setData(Uri.parse("sms:" + phoneNo));
-//                        sendIntent.putExtra(Intent.EXTRA_UID,  ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
-
-//                        if (defaultSmsPackageName != null)// Can be null in case that there is no default, then the user would be able to choose
-//                        // any app that support this intent.
-//                        {
-//                            sendIntent.setPackage(defaultSmsPackageName);
-//                        }
-//                        startActivity(sendIntent);
-
-                        Intent email = new Intent(Intent.ACTION_SEND);
-                        email.putExtra(Intent.EXTRA_EMAIL, new String[]{email2});
-                        email.putExtra(Intent.EXTRA_SUBJECT, "subject");
-                        email.putExtra(Intent.EXTRA_TEXT, "mess");
-
-//need this to prompts email client only
-
-                        //sendIntent.setType("vnd.android-dir/mms-sms/");
-
-                        //startActivity(Intent.createChooser(sendIntent, "Choose an Email client :"));
-
-                        Intent intent = new Intent(Intent.ACTION_SENDTO);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        intent.setData(Uri.parse("smsto:" + phoneNo)); // This ensures only SMS apps respond
-                        intent.putExtra("sms_body", "Hey it works :) New todo ");
-                       // startActivity(intent);
-
-
-                        email.setType("message/rfc822");
-
-                        //startActivity(Intent.createChooser(email, "Choose an Email client :"));
-                        //emailList.add(email); // Here you will get list of email
-
-                    }
-                    emailCur.close();
-                }
-
-
-                if (contactsCursor.moveToFirst()) {
-                    do {
-                        String phoneNumber = String.valueOf(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        int phoneNumberType = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DATA2);
-                        Log.i(LOGGING_TAG, String.format("phoneNumber: %s", phoneNumber));
-                        Log.i(LOGGING_TAG, String.format("phoneNumberType: %s", phoneNumberType));
-                        if (phoneNumberType == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) {
-
-                            Log.i(LOGGING_TAG, String.format("Found mobileNumber: %s", phoneNumber));
-                        }
-                    }
-                    while (phoneCursor.moveToNext());
-                }
-            }
-        }
-    }
-
-    private boolean verifyReadContactPermission() {
-        int hasReadContactsPermission = checkSelfPermission(Manifest.permission.READ_CONTACTS);
-        if (hasReadContactsPermission == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        } else {
-            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 4);
-            return false;
-        }
-    }
 }

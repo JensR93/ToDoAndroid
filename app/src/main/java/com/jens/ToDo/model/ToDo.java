@@ -1,14 +1,14 @@
 package com.jens.ToDo.model;
 
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
 
 import com.google.gson.annotations.SerializedName;
-import com.jens.ToDo.model.Converter.ContactConverter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Entity
@@ -23,10 +23,11 @@ public class ToDo implements Serializable {
     private boolean favourite =false;
 
     private Long expiry;
-    @TypeConverters(ContactConverter.class)
+
     private List <String> contacts = new ArrayList<String>();
 
-    //private List<String> contactList = new ArrayList<>();
+    @Ignore
+    private transient List<ToDoContact> toDoContactList = new ArrayList<ToDoContact>();
     public ToDo(){
 
     }
@@ -90,16 +91,52 @@ public class ToDo implements Serializable {
 
         contacts.add(contact);
     }
+    private String getStringFromArrayList(){
+        String retval ="";
+        return retval;
+    }
 
-    /*    public List<String> getContactList() {
-            return contactList;
-        }
+    public List<ToDoContact> getToDoContactList() {
+        return toDoContactList;
+    }
 
-        public void setContactList(List<String> contactList) {
-            this.contactList = contactList;
-        }*/
+    public void setToDoContactList(List<ToDoContact> toDoContactList) {
+        this.toDoContactList = toDoContactList;
+    }
+
     @Override
     public String toString() {
         return name ;
+    }
+
+    public void addToDoContact(ToDoContact toDoContact) {
+        this.toDoContactList.add(toDoContact);
+        //this.contacts.add(toDoContact.getID());
+    }
+
+    public String getContactStringMultiLine(){
+        String retval ="";
+        for (ToDoContact toDoContact:toDoContactList) {
+
+            retval+=toDoContact.getName()+"("+toDoContact.getID()+")\n";
+        }
+        return retval;
+    }
+
+
+    public void removeToDoContact(ToDoContact toDoContact) {
+
+        for (Iterator<ToDoContact> iter = toDoContactList.listIterator(); iter.hasNext(); ) {
+            ToDoContact toDoContactListElement = iter.next();
+            if (toDoContactListElement.getID().equals(toDoContact.getID())) {
+                iter.remove();
+            }
+        }
+        for (Iterator<String> iter = contacts.listIterator(); iter.hasNext(); ) {
+            String toDoContactListElement = iter.next();
+            if (toDoContactListElement.equals(toDoContact.getID())) {
+                iter.remove();
+            }
+        }
     }
 }

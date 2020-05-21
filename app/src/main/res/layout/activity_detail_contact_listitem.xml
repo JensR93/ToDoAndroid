@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:layout_weight="1"
+    android:layout_width="match_parent"
+    android:padding="10dp"
+    android:layout_height="match_parent">
+    <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/itemConactName"
+        android:minWidth="200dp"
+        android:textSize="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"></TextView>
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageButtonSMS"
+        android:background="?android:attr/selectableItemBackground"
+        android:src="@drawable/outline_textsms_24">
+    </androidx.appcompat.widget.AppCompatImageButton>
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageButtonEMail"
+        android:background="?android:attr/selectableItemBackground"
+        android:src="@drawable/outline_email_24">
+    </androidx.appcompat.widget.AppCompatImageButton>
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
+        android:id="@+id/imageButtonDelete"
+        android:src="@drawable/outline_delete_24">
+    </androidx.appcompat.widget.AppCompatImageButton>
+</LinearLayout>

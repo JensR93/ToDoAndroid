@@ -1,20 +1,13 @@
-package com.jens.ToDo.ui;
+package com.jens.ToDo.ui.Activity.Main;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,6 +31,8 @@ import com.jens.ToDo.model.tasks.CheckRemoteAvailableTask;
 import com.jens.ToDo.model.tasks.ReadAllItemsTask;
 import com.jens.ToDo.model.tasks.ReadItemTask;
 import com.jens.ToDo.model.tasks.UpdateItemTask;
+import com.jens.ToDo.ui.Activity.DetailView.DetailViewActivity;
+import com.jens.ToDo.ui.Activity.SettingsActivity;
 
 import java.util.Comparator;
 import java.util.List;
