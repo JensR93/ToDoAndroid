@@ -71,6 +71,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     IToDoCRUDOperations crudOperations;
 
     ToDo selectedItem;
+    ToDo toDoElementToCreate;
     MenuItem saveMenuItem, deleteMenuItem;
 
 
@@ -186,7 +187,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         deleteMenuItem = menu.findItem(R.id.deleteItem);
 
         if (itemId != -1) {
-            loadToDoObject(itemId);
+            //loadToDoObject(itemId);
             deleteMenuItem.setEnabled(true);
             deleteMenuItem.getIcon().setAlpha(255);
         } else {
@@ -260,7 +261,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
             @Override
             protected void onPostExecute(ToDo dataItem) {
-                super.onPostExecute(dataItem);
+                //super.onPostExecute(dataItem);
                 if (dataItem != null) {
                     inputDescription.setText(dataItem.getDescription());
                     inputID.setText(dataItem.getId().toString());
@@ -269,6 +270,40 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
                     inputName.setText(dataItem.getName());
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
+
+                    for (String stringContactId: dataItem.getContacts()) {
+
+                        final Cursor phoneCursor = getContentResolver().query(
+                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                new String[] {
+                                        ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                                        ContactsContract.CommonDataKinds.Phone.NUMBER,
+                                        ContactsContract.CommonDataKinds.Phone.PHOTO_URI,
+                                },
+                                ContactsContract.Data.CONTACT_ID + "=?",
+                                new String[] {String.valueOf(stringContactId)}, null);
+
+                        try {
+                            final int idxAvatarUri = phoneCursor.getColumnIndexOrThrow(
+                                    ContactsContract.CommonDataKinds.Phone.PHOTO_URI);
+                            final int idxName = phoneCursor.getColumnIndexOrThrow(
+                                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                            final int idxPhone = phoneCursor.getColumnIndexOrThrow(
+                                    ContactsContract.CommonDataKinds.Phone.NUMBER);
+
+                            while (phoneCursor.moveToNext()) {
+                                String phoneNumber = phoneCursor.getString(idxPhone);
+                                String name = phoneCursor.getString(idxName);
+                                String avatarUri = phoneCursor.getString(idxAvatarUri);
+                                textImportContacts.setText(textImportContacts.getText()+"\n"+name+"("+stringContactId+")");
+                                Log.d("Details", "Phone number: " + phoneNumber);
+                                Log.d("Details", "Name: " + name);
+                                Log.d("Details", "Avatar URI: " + avatarUri);
+                            }
+                        } finally {
+                            phoneCursor.close();
+                        }
+                    }
 
                     if (dataItem.getExpiry() != null) {
 
@@ -408,7 +443,10 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
                 //TODO: CreateItemTask bauen: Parameter mehrere Strings und nicht das Objekt --> ID != 0
 
-                ToDo toDoElementToCreate = new ToDo();
+                if(toDoElementToCreate==null)
+                {
+                    toDoElementToCreate = new ToDo();
+                }
                 toDoElementToCreate.setName(inpName);
                 toDoElementToCreate.setDescription(inpDescription);
                 toDoElementToCreate.setDone(checkDone.isChecked());
@@ -456,7 +494,19 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
             String contactId = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
 
             Log.i(LOGGING_TAG, String.format("contactName: %s", contactName));
-            textImportContacts.setText(textImportContacts.getText() + "\n" + contactName);
+
+            //UI
+            if(toDoElementToCreate==null)
+            {
+                toDoElementToCreate = new ToDo();
+            }
+            if(selectedItem!=null)
+            {
+                selectedItem.addContact(contactId);
+            }
+            toDoElementToCreate.addContact(contactId);
+            textImportContacts.setText(textImportContacts.getText() + "\n" + contactName + "("+contactId+")");
+
 
             Log.i(LOGGING_TAG, String.format("contactID: %s", contactId));
 
@@ -523,7 +573,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.setData(Uri.parse("smsto:" + phoneNo)); // This ensures only SMS apps respond
                         intent.putExtra("sms_body", "Hey it works :) New todo ");
-                        startActivity(intent);
+                       // startActivity(intent);
 
 
                         email.setType("message/rfc822");
