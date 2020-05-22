@@ -47,7 +47,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 
-public class DetailViewActivity extends AppCompatActivity implements View.OnClickListener  {
+public class DetailViewActivity extends AppCompatActivity implements View.OnClickListener {
 
 
     //region Variable
@@ -84,7 +84,6 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     long itemId;
 
 
-
     //wird beim ersten Start aufgerufen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,36 +103,15 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
         if (itemId != -1) {
             loadToDoObject(itemId);
+        } else {
+            selectedItem = new ToDo();
         }
-        else{
-            selectedItem=new ToDo();
-        }
 
 
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
 
-    // Beim schließen, wegswipen / über Taskmanager schließen
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    // Aufruf wenn nicht mehr im Hintergrund
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
+    // Opens UI Elements in Android to pick date and time
     @Override
     public void onClick(View view) {
 
@@ -187,11 +165,12 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         deleteMenuItem = menu.findItem(R.id.deleteItem);
 
         if (itemId != -1) {
-            //loadToDoObject(itemId);
             deleteMenuItem.setEnabled(true);
             deleteMenuItem.getIcon().setAlpha(255);
+            deleteMenuItem.setVisible(true);
         } else {
             deleteMenuItem.setEnabled(false);
+            deleteMenuItem.setVisible(false);
             deleteMenuItem.getIcon().setAlpha(0);
         }
         saveMenuItem.setEnabled(true);
@@ -207,7 +186,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         if (requestCode == CALL_CONTACT_PICK && resultCode == Activity.RESULT_OK) {
             Log.i(getClass().getSimpleName(), "got intent from contact picker" + data);
             Contactmanager ccc = new Contactmanager(this);
-            selectedItem = ccc.showAddContactDetails(data.getData(),selectedItem);
+            selectedItem = ccc.showAddContactDetails(data.getData(), selectedItem);
             textImportContacts.setText(selectedItem.getContactStringMultiLine());
             //textImportContacts.setText(ccc.showAddContactDetails(data.getData(),selectedItem));
         }
@@ -276,9 +255,9 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
 
 
-                   // textImportContacts.setText(cccc.readContactFromDataItem(dataItem));
+                    // textImportContacts.setText(cccc.readContactFromDataItem(dataItem));
 
-                    dataItem= cccc.readContactFromDataItem(dataItem);
+                    dataItem = cccc.readContactFromDataItem(dataItem);
 
                     textImportContacts.setText(dataItem.getContactStringMultiLine());
                     if (dataItem.getExpiry() != null) {
@@ -296,8 +275,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                     }
 
                     //Contactlistitem
-                    ContactListItem contactListItem = new ContactListItem(DetailViewActivity.this,selectedItem);
-
+                    ContactListItem contactListItem = new ContactListItem(DetailViewActivity.this, selectedItem);
 
 
                 }
@@ -388,92 +366,96 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         String inpName = inputName.getText().toString();
         String inpDescription = inputDescription.getText().toString();
 
-        //EDIT
-        if (itemId != -1 && selectedItem != null) {
-            selectedItem.setName(inputName.getText().toString());
-            selectedItem.setDescription(inputDescription.getText().toString());
-            selectedItem.setFavourite(checkFavourite.isChecked());
-            selectedItem.setDone(checkDone.isChecked());
+        if (inpName.length()<4) {
+            Toast.makeText(this, R.string.detailSaveMinimumNameLength, Toast.LENGTH_SHORT).show();
+        } else {
 
-
-            if (!inputDueDate.getText().toString().equals("") || !inputDueTime.getText().toString().equals("")) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
-                LocalDate datePart = LocalDate.parse(inputDueDate.getText(), formatter);
-                LocalTime timePart = LocalTime.parse(inputDueTime.getText());
-                LocalDateTime dt = LocalDateTime.of(datePart, timePart);
-
-                long longDateTimeValue = dt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                selectedItem.setExpiry(longDateTimeValue);
-            }
-            new UpdateItemTask(crudOperations).run(selectedItem, updated -> {
-
-                if (updated) {
-                    try{
-                        returnIntent.putExtra(ARG_ITEM_ID, selectedItem.getId());
-
-                        returnIntent.putExtra("ToDoItem", selectedItem);
-                        setResult(STATUS_EDITED, returnIntent);
-                        setContentView(R.layout.activity_main);
-
-                        finish();}
-                    catch (Exception e){
-                        System.out.println(e);
-                    }
-                }
-
-            });
-        }
-        //Create
-        else {
-            if (itemId == -1) {
-
-                //TODO: CreateItemTask bauen: Parameter mehrere Strings und nicht das Objekt --> ID != 0
-
-                if(selectedItem==null)
-                {
-                    selectedItem = new ToDo();
-                }
-                selectedItem.setName(inpName);
-                selectedItem.setDescription(inpDescription);
-                selectedItem.setDone(checkDone.isChecked());
+            //EDIT
+            if (itemId != -1 && selectedItem != null) {
+                selectedItem.setName(inputName.getText().toString());
+                selectedItem.setDescription(inputDescription.getText().toString());
                 selectedItem.setFavourite(checkFavourite.isChecked());
+                selectedItem.setDone(checkDone.isChecked());
 
 
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
-                if (!inputDueDate.getText().toString().equals("") || !inputDueTime.getText().toString().equals("")) {
+                if (!inputDueDate.getText().toString().equals("")) {
+                    if (inputDueTime.getText().toString().equals("")) {
+                        inputDueTime.setText("00:00");
+                    }
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
                     LocalDate datePart = LocalDate.parse(inputDueDate.getText(), formatter);
                     LocalTime timePart = LocalTime.parse(inputDueTime.getText());
                     LocalDateTime dt = LocalDateTime.of(datePart, timePart);
+
                     long longDateTimeValue = dt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
                     selectedItem.setExpiry(longDateTimeValue);
                 }
+                new UpdateItemTask(crudOperations).run(selectedItem, updated -> {
+
+                    if (updated) {
+                        try {
+                            returnIntent.putExtra(ARG_ITEM_ID, selectedItem.getId());
+
+                            returnIntent.putExtra("ToDoItem", selectedItem);
+                            setResult(STATUS_EDITED, returnIntent);
+                            setContentView(R.layout.activity_main);
+
+                            finish();
+                        } catch (Exception e) {
+                            System.out.println(e);
+                        }
+                    }
+
+                });
+            }
+            //Create
+            else {
+                if (itemId == -1) {
+
+                    //TODO: CreateItemTask bauen: Parameter mehrere Strings und nicht das Objekt --> ID != 0
+
+                    if (selectedItem == null) {
+                        selectedItem = new ToDo();
+                    }
+                    selectedItem.setName(inpName);
+                    selectedItem.setDescription(inpDescription);
+                    selectedItem.setDone(checkDone.isChecked());
+                    selectedItem.setFavourite(checkFavourite.isChecked());
 
 
-                new Thread(() -> {
-                    selectedItem = crudOperations.createItem(selectedItem);
-                    runOnUiThread(() -> {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
+                    if (!inputDueDate.getText().toString().equals("") && !inputDueTime.getText().toString().equals("")) {
+                        LocalDate datePart = LocalDate.parse(inputDueDate.getText(), formatter);
+                        LocalTime timePart = LocalTime.parse(inputDueTime.getText());
+                        LocalDateTime dt = LocalDateTime.of(datePart, timePart);
+                        long longDateTimeValue = dt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                        selectedItem.setExpiry(longDateTimeValue);
+                    }
 
 
-                        returnIntent.putExtra("ToDoItem", selectedItem);
+                    new Thread(() -> {
+                        selectedItem = crudOperations.createItem(selectedItem);
+                        runOnUiThread(() -> {
 
-                        returnIntent.putExtra(ARG_ITEM_ID, selectedItem.getId());
-                        setResult(STATUS_CREATED, returnIntent);
-                        setContentView(R.layout.activity_main);
-                        finish();
-                    });
 
-                }).start();
-            } else {
+                            returnIntent.putExtra("ToDoItem", selectedItem);
+
+                            returnIntent.putExtra(ARG_ITEM_ID, selectedItem.getId());
+                            setResult(STATUS_CREATED, returnIntent);
+                            setContentView(R.layout.activity_main);
+                            finish();
+                        });
+
+                    }).start();
+                } else {
 //                setResult(-1, returnIntent);
 //                returnIntent.putExtra("dataitem", selectedItem);
 //                setContentView(R.layout.activity_main);
 //                finish();
+                }
             }
         }
     }
-
-
-
 
 
 }

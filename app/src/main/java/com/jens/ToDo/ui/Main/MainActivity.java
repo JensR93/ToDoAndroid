@@ -5,10 +5,11 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -26,20 +27,18 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.jens.ToDo.R;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoApplication;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.tasks.CheckRemoteAvailableTask;
+import com.jens.ToDo.model.tasks.DeleteAllItemTask;
 import com.jens.ToDo.model.tasks.ReadAllItemsTask;
 import com.jens.ToDo.model.tasks.ReadItemTask;
 import com.jens.ToDo.model.tasks.UpdateItemTask;
 import com.jens.ToDo.ui.DetailView.DetailViewActivity;
-import com.jens.ToDo.ui.SettingsActivity;
 
-import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
 
@@ -62,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView itemNameView;
     CheckBox itemReadyView;
     private ListView listView;
-    private FloatingActionButton floatingActionButton;
     private ArrayAdapter<ToDo> listViewAdapter;
     private Intent newTodoIntent;
 
@@ -92,10 +90,10 @@ public class MainActivity extends AppCompatActivity {
             ((ToDoApplication) getApplication()).setRemoteCRUDMode(available);
             if(available)
             {
-                Toast.makeText(this,"Remote available",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.taskRemoteAvailable,Toast.LENGTH_SHORT).show();
             }
             else{
-                Toast.makeText(this,"Remote not available",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.taskRemoteNotAvailable,Toast.LENGTH_SHORT).show();
             }
             ToDoApplication ToDoApplication = (ToDoApplication) getApplication();
             crudOperations = (IToDoCRUDOperations) ToDoApplication.getCRUDOperations();
@@ -110,15 +108,53 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if(item.getItemId()==R.id.showSettings){
-            showSettings();
+        if(item.getItemId()==R.id.createToDo){
+            newTodoIntent = new Intent(this, DetailViewActivity.class);
+            startActivityForResult(newTodoIntent, CALL_DETAILVIEW_FOR_CREATE);
             return true;
         }
         if(item.getItemId()==R.id.showSort){
             showSortPopup();
             return true;
         }
+        if(item.getItemId()==R.id.DeleteAll){
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.mainDeleteAllElements);
+            builder.setPositiveButton(R.string.mainDeleteAll, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    deleteAllDataItem();
+                }
+            });
+            builder.setNegativeButton(R.string.mainAbort, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Toast.makeText(MainActivity.this, R.string.mainAbort, Toast.LENGTH_SHORT).show();
+                }
+            });
+            builder.create().show();
+
+
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void deleteAllDataItem() {
+
+        new DeleteAllItemTask(crudOperations).run(success -> {
+
+            if(success){
+                Toast.makeText(MainActivity.this, R.string.taskDeleteSuccess,Toast.LENGTH_SHORT).show();
+                listViewAdapter.clear();
+                dbItemList.clear();
+            }
+            else{
+                Toast.makeText(MainActivity.this, R.string.taskDeleteSuccessFail,Toast.LENGTH_SHORT).show();
+            }
+            //setContentView(R.layout.activity_main);
+            //finish();
+        });
     }
 
     private void showSortPopup() {
@@ -186,7 +222,6 @@ public class MainActivity extends AppCompatActivity {
 
                 if (selectedItem != null) {
                     listViewAdapter.add(selectedItem);
-                    Toast.makeText(this, selectedItem.toString() + " was created", Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -218,7 +253,6 @@ public class MainActivity extends AppCompatActivity {
                     //this.dbItemList.add(itemToRemoveFromList);
                     updateSort();
                     if (deleted) {
-                        Toast.makeText(this, "Deleted " + selectedItem.getName(), Toast.LENGTH_LONG).show();
                         updateSort();
                     }
                 }
@@ -231,7 +265,6 @@ public class MainActivity extends AppCompatActivity {
     private void findElements() {
 
         listView = findViewById(R.id.listView1);
-        floatingActionButton = findViewById(R.id.fabDashboard);
         listView.setAdapter(listViewAdapter);
         progressBar = findViewById(R.id.progressbar);
     }
@@ -247,15 +280,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        newTodoIntent = new Intent(this, DetailViewActivity.class);
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                startActivityForResult(newTodoIntent, CALL_DETAILVIEW_FOR_CREATE);
-                //  setContentView(R.layout.activity_detailview);
-            }
-        });
 
     }
     private void handleSelectedItem(ToDo clickedToDo) {
@@ -279,7 +303,7 @@ public class MainActivity extends AppCompatActivity {
                 if (itemNameView != null && itemReadyView != null) {
                     itemNameView.setText(currentItem.toString());
                     long now= new java.sql.Timestamp(System.currentTimeMillis()).getTime();
-                    if(currentItem.getExpiry()<now)
+                    if(currentItem.getExpiry()!=null&&currentItem.getExpiry()<now)
                     {
                         itemNameView.setTextColor(Color.RED);
                     }
@@ -291,9 +315,7 @@ public class MainActivity extends AppCompatActivity {
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                             currentItem.setDone(isChecked);
                             new UpdateItemTask(crudOperations).run(currentItem, updated -> {
-                                // TODO: Wird aus irgendeinem Grund nicht ausgeführt
                                 if (updated) {
-                                    Toast.makeText(MainActivity.this, "Updated " + currentItem.getName(), Toast.LENGTH_LONG).show();
                                     updateSort();
                                 }
                             });
@@ -339,11 +361,6 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-    }
-    private void showSettings() {
-
-        settingsIntent = new Intent(this, SettingsActivity.class);
-        startActivity(settingsIntent);
     }
 
 }

@@ -31,4 +31,12 @@
     <string name="sortPopupChooseSort">Choose sort option</string>
     <string name="sortPopupFavourite">Favoriten</string>
     <string name="sortPopupDate">Datum</string>
+    <string name="mainDeleteAllElements">Möchten sie wirklich alle ToDo Elemente löschen?</string>
+    <string name="mainDeleteAll">Alles löschen</string>
+    <string name="mainAbort">Abbrechen</string>
+    <string name="taskRemoteAvailable">Remote available</string>
+    <string name="taskRemoteNotAvailable">Remote not available</string>
+    <string name="taskDeleteSuccess">Delete success</string>
+    <string name="taskDeleteSuccessFail">Delete failed</string>
+    <string name="detailSaveMinimumNameLength">Name muss mindestens 4 Zeichen besitzen</string>
 </resources>
