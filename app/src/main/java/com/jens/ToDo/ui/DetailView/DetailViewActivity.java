@@ -1,4 +1,4 @@
-package com.jens.ToDo.ui.Activity.DetailView;
+package com.jens.ToDo.ui.DetailView;
 /**
  * @author Jens
  */
@@ -35,7 +35,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.jens.ToDo.R;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoApplication;
-import com.jens.ToDo.model.ToDoContact;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.tasks.DeleteItemTask;
 import com.jens.ToDo.model.tasks.UpdateItemTask;

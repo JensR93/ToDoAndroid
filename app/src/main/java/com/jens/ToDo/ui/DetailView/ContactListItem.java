@@ -1,4 +1,4 @@
-package com.jens.ToDo.ui.Activity.DetailView;
+package com.jens.ToDo.ui.DetailView;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -59,14 +59,11 @@ public class ContactListItem {
                 buttonEmail.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent emailIntent = new Intent(Intent.ACTION_SEND);
-                        emailIntent.setType("message/rfc822");
-                        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{selectedListItem.get(position).getEmailAdress()});
-                        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "subject");
-                        emailIntent.putExtra(Intent.EXTRA_TEXT, "mess");
-                        detailViewActivity.startActivity(emailIntent);
-
-                        //startActivity(Intent.createChooser(email, "Choose an Email client :"));
+                        Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                        emailIntent.setData(Uri.parse("mailto:"+selectedListItem.get(position).getEmailAdress()));
+                        emailIntent.putExtra(Intent.EXTRA_SUBJECT, selectedItem.getName());
+                        emailIntent.putExtra(Intent.EXTRA_TEXT, selectedItem.getDescription());
+                        detailViewActivity.startActivity(Intent.createChooser(emailIntent, "Choose an Email client :"));
                     }
                 });
                 buttonSMS.setOnClickListener(new View.OnClickListener() {
@@ -75,7 +72,7 @@ public class ContactListItem {
                         Intent smsIntent = new Intent(Intent.ACTION_SENDTO);
                         smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         smsIntent.setData(Uri.parse("smsto:" + selectedListItem.get(position).getPhoneNo())); // This ensures only SMS apps respond
-                        smsIntent.putExtra("sms_body", "Hey I have a Todo for you");
+                        smsIntent.putExtra("sms_body", selectedItem.getDescription());
                         detailViewActivity.startActivity(smsIntent);
                     }
                 });
@@ -90,6 +87,9 @@ public class ContactListItem {
                 if (itemNameView != null) {
                     itemNameView.setText(selectedListItem.get(position).getName());
 
+                    if(selectedListItem.get(position).getEmailAdress()==null){
+                        buttonEmail.setEnabled(false);
+                    }
 
                 }
                 return itemView;

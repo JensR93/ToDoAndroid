@@ -1,4 +1,4 @@
-package com.jens.ToDo.ui.Activity.DetailView;
+package com.jens.ToDo.ui.DetailView;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -19,12 +19,12 @@ public class Contactmanager {
     }
 
     public ToDo readContactFromDataItem(ToDo dataItem){
-        String retval ="";
-        String name = null;
-        String phoneNumber =null;
-        String email = null;
-        for (String stringContactId: dataItem.getContacts()) {
 
+        for (String stringContactId: dataItem.getContacts()) {
+            String retval ="";
+            String name = null;
+            String phoneNumber =null;
+            String email = null;
             final Cursor phoneCursor = detailViewActivity.getContentResolver().query(
                     ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                     new String[] {

@@ -1,10 +1,11 @@
-package com.jens.ToDo.ui.Activity.Main;
+package com.jens.ToDo.ui.Main;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,6 +19,8 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,22 +34,26 @@ import com.jens.ToDo.model.tasks.CheckRemoteAvailableTask;
 import com.jens.ToDo.model.tasks.ReadAllItemsTask;
 import com.jens.ToDo.model.tasks.ReadItemTask;
 import com.jens.ToDo.model.tasks.UpdateItemTask;
-import com.jens.ToDo.ui.Activity.DetailView.DetailViewActivity;
-import com.jens.ToDo.ui.Activity.SettingsActivity;
+import com.jens.ToDo.ui.DetailView.DetailViewActivity;
+import com.jens.ToDo.ui.SettingsActivity;
 
 import java.util.Comparator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    Dialog myDialog;
+
     
     //region Constants
     public static final int CALL_DETAILVIEW_FOR_CREATE = 0;
     public static final int CALL_DETAILVIEW_FOR_EDIT = 1;
     private static final String LOGGING_TAG = DetailViewActivity.class.getSimpleName();
+
     //endregion
     
-    
+    private boolean favouriteSort = true;
+
     
     //region Variable
     private TextView itemNameView;
@@ -63,7 +70,10 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private Comparator<ToDo> alphabeticComperator = (l, r) -> String.valueOf(l.getName()).compareTo(r.getName());
 
-    private Comparator<ToDo> undonedoneComperator = (l, r) ->Boolean.compare(l.isDone(),r.isDone());
+    private Comparator<ToDo> expiryComperator = (l, r) -> String.valueOf(l.getExpiry()).compareTo(String.valueOf(r.getExpiry()));
+    private Comparator<ToDo> undonedoneComperator = (l, r) -> Boolean.compare(l.isDone(),r.isDone());
+
+    private Comparator<ToDo> favouriteComperator = (l, r) -> Boolean.compare(r.isFavourite(),l.isFavourite());
     //endregion 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         createListener();
         listViewAdapter = createListViewAdapter();
 
+        myDialog=new Dialog(this);
 
         new CheckRemoteAvailableTask().run(available -> {
             ((ToDoApplication) getApplication()).setRemoteCRUDMode(available);
@@ -100,7 +111,56 @@ public class MainActivity extends AppCompatActivity {
             showSettings();
             return true;
         }
+        if(item.getItemId()==R.id.showSort){
+            showSortPopup();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showSortPopup() {
+
+        myDialog.setContentView(R.layout.activity_main_sort_popup);
+
+        RadioGroup radioSortGroup= myDialog.findViewById(R.id.radioGroup_character);
+        RadioButton radioSortButtonFavourite= myDialog.findViewById(R.id.radioSortDone);
+        RadioButton radioSortButtonExpiry= myDialog.findViewById(R.id.radioSortFavouriteAndExpiry);
+
+        if(favouriteSort){
+            radioSortButtonFavourite.setChecked(true);
+        }
+        else {
+            radioSortButtonExpiry.setChecked(true);
+        }
+
+        radioSortGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+        {
+            public void onCheckedChanged(RadioGroup group, int checkedId)
+            {
+                // This will get the radiobutton that has changed in its check state
+                RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
+                // This puts the value (true/false) into the variable
+                boolean isChecked = checkedRadioButton.isChecked();
+                // If the radiobutton that has changed in check state is now checked...
+                if (isChecked)
+                {
+                    if(checkedRadioButton.getText().equals(radioSortButtonFavourite.getText())){
+                        favouriteSort=true;
+                        updateSort();
+                        myDialog.dismiss();
+                    }
+                    if(checkedRadioButton.getText().equals(radioSortButtonExpiry.getText())){
+                        favouriteSort=false;
+                        updateSort();
+                        myDialog.dismiss();
+                    }
+                    // Changes the textview's text to "Checked: example radiobutton text"
+
+                }
+            }
+        });
+
+        myDialog.show();
     }
 
 
@@ -142,7 +202,6 @@ public class MainActivity extends AppCompatActivity {
 
                 }
 
-                //TODO Button hinzufügen in detailview
                 if (resultCode == DetailViewActivity.STATUS_DELETED) {
                     // Semesterprojekt
                     boolean deleted = (Boolean) data.getSerializableExtra("success");
@@ -237,8 +296,17 @@ public class MainActivity extends AppCompatActivity {
         };
 
     }
+
+
     private void updateSort() {
-        this.listViewAdapter.sort(alphabeticComperator);
+
+        if(favouriteSort){
+            this.listViewAdapter.sort(favouriteComperator);
+        }
+        else{
+            this.listViewAdapter.sort(expiryComperator);
+        }
+
         this.listViewAdapter.sort(undonedoneComperator);
         listViewAdapter.notifyDataSetChanged();
         listView.setAdapter(listViewAdapter);
@@ -247,13 +315,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void editToDoToList(ToDo d1) {
-        //TODO Kein Refresh, eventuell Object selectedItem wird nur aktualisiert???
-
-        //listViewAdapter.add(d1);
         selectedItem.setDescription(d1.getDescription());
         selectedItem.setName(d1.getName());
-        //TODO HIER WEITER MACHEN!!!
     }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void readDatabase() {
 
@@ -263,26 +328,13 @@ public class MainActivity extends AppCompatActivity {
             listViewAdapter.addAll(ToDos);
             updateSort();
 
-            //dbItemList.sort((l,r)->String.valueOf(l.getName()).compareTo(r.getName()));
-//            ToDos.sort(new Comparator<ToDo>() {
-//                @Override
-//                public int compare(ToDo o1, ToDo o2) {
-//
-//                    return String.valueOf(o1.getName()).compareTo(o2.getName());
-//                }
-//            });
-
         });
 
     }
-
-    //region Contacts
-
-
     private void showSettings() {
 
         settingsIntent = new Intent(this, SettingsActivity.class);
         startActivity(settingsIntent);
     }
-    //endregion
+
 }

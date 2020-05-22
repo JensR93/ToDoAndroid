@@ -1,4 +1,4 @@
-package com.jens.ToDo.ui.Activity;
+package com.jens.ToDo.ui;
 
 import android.os.Bundle;
 import android.view.View;

@@ -28,4 +28,7 @@
     <string name="settingsConnected">Datenbank verbindung hergestellt</string>
     <string name="settingsDeleteAllTodos">Lösche alle ToDos</string>
     <string name="detailHintImportContacts">Kontakte importieren</string>
+    <string name="sortPopupChooseSort">Choose sort option</string>
+    <string name="sortPopupFavourite">Favoriten</string>
+    <string name="sortPopupDate">Datum</string>
 </resources>
