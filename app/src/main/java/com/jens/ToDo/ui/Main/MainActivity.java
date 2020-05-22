@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -37,6 +39,7 @@ import com.jens.ToDo.model.tasks.UpdateItemTask;
 import com.jens.ToDo.ui.DetailView.DetailViewActivity;
 import com.jens.ToDo.ui.SettingsActivity;
 
+import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
 
@@ -275,6 +278,12 @@ public class MainActivity extends AppCompatActivity {
 
                 if (itemNameView != null && itemReadyView != null) {
                     itemNameView.setText(currentItem.toString());
+                    long now= new java.sql.Timestamp(System.currentTimeMillis()).getTime();
+                    if(currentItem.getExpiry()<now)
+                    {
+                        itemNameView.setTextColor(Color.RED);
+                    }
+
                     itemReadyView.setOnCheckedChangeListener(null);
                     itemReadyView.setChecked(currentItem.isDone());
                     itemReadyView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
