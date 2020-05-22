@@ -8,11 +8,14 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
 import com.jens.ToDo.model.ToDo;
+import com.jens.ToDo.model.User;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import retrofit2.Call;
 
 public class SQLiteToDoCRUDOperationsImpl  implements IToDoCRUDOperations {
 
@@ -161,6 +164,11 @@ public class SQLiteToDoCRUDOperationsImpl  implements IToDoCRUDOperations {
 
         Log.i(logger, "deleteToDo(): deletion in db done");
         return false;
+    }
+
+    @Override
+    public Call<Boolean> authenticateUser(User user) {
+        return null;
     }
 
     /*

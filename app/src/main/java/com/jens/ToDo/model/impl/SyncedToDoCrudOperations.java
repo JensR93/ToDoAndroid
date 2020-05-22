@@ -1,9 +1,12 @@
 package com.jens.ToDo.model.impl;
 
 import com.jens.ToDo.model.ToDo;
+import com.jens.ToDo.model.User;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 
 import java.util.List;
+
+import retrofit2.Call;
 
 public class SyncedToDoCrudOperations implements IToDoCRUDOperations {
     private IToDoCRUDOperations localCrud;
@@ -12,6 +15,8 @@ public class SyncedToDoCrudOperations implements IToDoCRUDOperations {
         this.localCrud = localCrud;
         this.remoteCrud = remoteCrud;
     }
+
+
 
     @Override
     public ToDo createItem(ToDo item) {
@@ -57,5 +62,10 @@ public class SyncedToDoCrudOperations implements IToDoCRUDOperations {
             return  true;
         }
         return false;
+    }
+
+    @Override
+    public Call<Boolean> authenticateUser(User user) {
+        return remoteCrud.authenticateUser(user);
     }
 }

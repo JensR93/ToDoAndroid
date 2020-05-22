@@ -5,11 +5,14 @@ import android.content.Context;
 import androidx.room.Room;
 
 import com.jens.ToDo.model.ToDo;
+import com.jens.ToDo.model.User;
 import com.jens.ToDo.model.abstracts.ToDoDatabase;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.interfaces.ToDoDao;
 
 import java.util.List;
+
+import retrofit2.Call;
 
 public class RoomToDoCRUDOperationsImpl implements IToDoCRUDOperations {
 
@@ -64,5 +67,10 @@ public class RoomToDoCRUDOperationsImpl implements IToDoCRUDOperations {
 
         return false;
 
+    }
+
+    @Override
+    public Call<Boolean> authenticateUser(User user) {
+        return null;
     }
 }

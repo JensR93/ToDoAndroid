@@ -1,6 +1,7 @@
 package com.jens.ToDo.model.impl;
 
 import com.jens.ToDo.model.ToDo;
+import com.jens.ToDo.model.User;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 
 import java.io.IOException;
@@ -11,15 +12,14 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.Body;
-import retrofit2.http.DELETE;
-import retrofit2.http.GET;
-import retrofit2.http.POST;
-import retrofit2.http.PUT;
-import retrofit2.http.Path;
 
 public class RetroFitToDoRUDOperationsImpl implements IToDoCRUDOperations {
-    private ToDoWebAPI webAPIClient;
+    @Override
+    public Call<Boolean> authenticateUser(User user) {
+        return webAPIClient.authenticateUser(user);
+    }
+
+    private iToDoWebAPI webAPIClient;
 
     public RetroFitToDoRUDOperationsImpl() {
 
@@ -32,7 +32,7 @@ public class RetroFitToDoRUDOperationsImpl implements IToDoCRUDOperations {
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(okHttpClient)
                 .build();
-        webAPIClient=retrofit.create(ToDoWebAPI.class);
+        webAPIClient=retrofit.create(iToDoWebAPI.class);
     }
 
     @Override
@@ -106,18 +106,5 @@ public class RetroFitToDoRUDOperationsImpl implements IToDoCRUDOperations {
     }
 
 
-    public static interface ToDoWebAPI {
-        @POST("/api/todos")
-        public Call<ToDo> createItem(@Body ToDo item);
-        @GET("/api/todos")
-        public Call<List<ToDo>> readAllItems();
-        @GET("/api/todos/{itemId}")
-        public Call<ToDo> readItem( @Path("itemId")long id);
-        @PUT("/api/todos/{itemId}")
-        public Call<ToDo> updateItem(@Path("itemId")long id, @Body ToDo item);
-        @DELETE("/api/todos/{itemId}")
-        public Call<Boolean> deleteItem(@Path("itemId")long id);
-        @DELETE("/api/todos")
-        public Call<Boolean> deleteAllItems();
-    }
+
 }
