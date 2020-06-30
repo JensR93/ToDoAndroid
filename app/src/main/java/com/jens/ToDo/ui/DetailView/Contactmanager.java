@@ -1,6 +1,7 @@
 package com.jens.ToDo.ui.DetailView;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -9,15 +10,18 @@ import android.util.Log;
 
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoContact;
+import com.jens.ToDo.ui.Main.MainActivity;
 
 public class Contactmanager {
 
-    DetailViewActivity detailViewActivity;
+    Activity detailViewActivity;
 
     public Contactmanager(DetailViewActivity detailViewActivity) {
         this.detailViewActivity = detailViewActivity;
     }
-
+    public Contactmanager(MainActivity detailViewActivity) {
+        this.detailViewActivity = detailViewActivity;
+    }
     public ToDo readContactFromDataItem(ToDo dataItem){
 
         for (String stringContactId: dataItem.getContacts()) {
@@ -72,7 +76,7 @@ public class Contactmanager {
             String phoneNumber = null;
             String emailAdress=null;;
 
-            Log.i(detailViewActivity.LOGGING_TAG, String.format("contactID: %s", contactId));
+            //Log.i(detailViewActivity.LOGGING_TAG, String.format("contactID: %s", contactId));
 
             if (verifyReadContactPermission()) {
                 Cursor phoneCursor = detailViewActivity.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
@@ -84,12 +88,12 @@ public class Contactmanager {
                 while (pCur.moveToNext()) {
                     // Do something with phones
                     phoneNumber = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                    Log.i(detailViewActivity.LOGGING_TAG, String.format("phone: %s", phoneNumber));
+                    //Log.i(detailViewActivity.LOGGING_TAG, String.format("phone: %s", phoneNumber));
                     Cursor emailCur = detailViewActivity.getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
                             null,ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",new String[]{contactId}, null);
                     if (emailCur.moveToNext()) {
                         emailAdress = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-                        Log.i(detailViewActivity.LOGGING_TAG, String.format("email: %s", emailAdress));
+                        //    Log.i(detailViewActivity.LOGGING_TAG, String.format("email: %s", emailAdress));
                     }
                     emailCur.close();
                 }
@@ -112,108 +116,6 @@ public class Contactmanager {
             retval+="\n"+toDoContact.getName();
         }
 
-//        Cursor contactsCursor = detailViewActivity.getContentResolver().query(contactUri, null, null, null);
-//        if (contactsCursor.moveToFirst()) {
-//            String contactName = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-//            String contactId = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
-//
-//            String phoneNumber = null;
-//            String emailAdress=null;;
-//
-//            //selectedItem.addContact(contactId);
-//            retval=retval+"\n"+contactName+"("+contactId+")";
-//
-//            Log.i(detailViewActivity.LOGGING_TAG, String.format("contactID: %s", contactId));
-//
-//            if (verifyReadContactPermission()) {
-//                Cursor phoneCursor = detailViewActivity.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
-//                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?", new String[]{contactId}, null);
-//
-//
-//                Cursor pCur = detailViewActivity.getContentResolver().query(
-//                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-//                        null,
-//                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID
-//                                + " = ?", new String[]{contactId}, null);
-//                while (pCur.moveToNext()) {
-//                    // Do something with phones
-//                    String phoneNo = pCur
-//                            .getString(pCur
-//                                    .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-//
-//                    //nameList.add(name); // Here you can list of contact.
-//                    //phoneList.add(phoneNo); // Here you will get list of phone number.
-//
-//
-//                    Cursor emailCur = detailViewActivity.getContentResolver().query(
-//                            ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-//                            null,
-//                            ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
-//                            new String[]{contactId}, null);
-//                    while (emailCur.moveToNext()) {
-//                        emailAdress = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-//
-//                        SmsManager smsManager = SmsManager.getDefault();
-//                        String sms = "smsText.getText().toString()";
-//                        // smsManager.sendTextMessage("012345", null, sms, null, null);
-////Send the SMS//
-//
-//                        String defaultSmsPackageName = Telephony.Sms.getDefaultSmsPackage(detailViewActivity); // Need to change the build to API 19
-//
-////                        Intent sendIntent = new Intent(Intent.ACTION_SENDTO);
-////                        sendIntent.setType("text/plain");
-////                        sendIntent.putExtra(Intent.EXTRA_TEXT, "text");
-////                        sendIntent.setData(Uri.parse("sms:" + phoneNo));
-////                        sendIntent.putExtra(Intent.EXTRA_UID,  ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
-//
-////                        if (defaultSmsPackageName != null)// Can be null in case that there is no default, then the user would be able to choose
-////                        // any app that support this intent.
-////                        {
-////                            sendIntent.setPackage(defaultSmsPackageName);
-////                        }
-////                        startActivity(sendIntent);
-//
-//                        Intent email = new Intent(Intent.ACTION_SEND);
-//                        email.putExtra(Intent.EXTRA_EMAIL, new String[]{emailAdress});
-//                        email.putExtra(Intent.EXTRA_SUBJECT, "subject");
-//                        email.putExtra(Intent.EXTRA_TEXT, "mess");
-//
-//                        //need this to prompts email client only
-//
-//                        //sendIntent.setType("vnd.android-dir/mms-sms/");
-//
-//                        //startActivity(Intent.createChooser(sendIntent, "Choose an Email client :"));
-//
-//
-//
-//
-//                        email.setType("message/rfc822");
-//
-//                        //startActivity(Intent.createChooser(email, "Choose an Email client :"));
-//                        //emailList.add(email); // Here you will get list of email
-//
-//                    }
-//                    emailCur.close();
-//                }
-//
-//
-//                if (contactsCursor.moveToFirst()) {
-//                    do {
-//                        phoneNumber = String.valueOf(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-//                        int phoneNumberType = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DATA2);
-//                        Log.i(detailViewActivity.LOGGING_TAG, String.format("phoneNumber: %s", phoneNumber));
-//                        Log.i(detailViewActivity.LOGGING_TAG, String.format("phoneNumberType: %s", phoneNumberType));
-//                        if (phoneNumberType == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) {
-//
-//                            Log.i(detailViewActivity.LOGGING_TAG, String.format("Found mobileNumber: %s", phoneNumber));
-//                        }
-//                    }
-//                    while (phoneCursor.moveToNext());
-//                }
-//                //ToDoContact c = new ToDoContact(contactId,contactName,phoneNumber,emailAdress);
-//                //selectedItem.addToDoContact(c);
-//            }
-//        }
 
         return selectedItem;
     }

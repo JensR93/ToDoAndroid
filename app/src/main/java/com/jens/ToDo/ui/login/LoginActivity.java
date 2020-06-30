@@ -27,6 +27,8 @@ public class LoginActivity extends Activity {
     private EditText email;
     private EditText password;
     private Button buttonSignIn;
+    private Button buttonStandardLogin;
+
     private ProgressBar progressBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +69,14 @@ public class LoginActivity extends Activity {
         password=findViewById(R.id.password);
         email=findViewById(R.id.username);
         buttonSignIn=findViewById(R.id.login);
+        buttonStandardLogin=findViewById(R.id.Standardlogin);
+        buttonStandardLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                email.setText("s@bht.de");
+                password.setText("000000");
+            }
+        });
         buttonSignIn.setOnClickListener(v -> {
             User user = new User(email.getText().toString(),password.getText().toString());
             RemoteUserOperationsImpl r = new RemoteUserOperationsImpl();

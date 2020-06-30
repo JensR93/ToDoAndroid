@@ -1,5 +1,6 @@
 package com.jens.ToDo.ui.DetailView;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.View;
@@ -15,6 +16,7 @@ import androidx.appcompat.widget.AppCompatImageButton;
 import com.jens.ToDo.R;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoContact;
+import com.jens.ToDo.ui.Main.MainActivity;
 
 import java.util.List;
 
@@ -22,17 +24,23 @@ public class ContactListItem {
 
 
     private TextView itemNameView;
-
+    private TextView itemNameView2;
     private ArrayAdapter<ToDoContact> listViewAdapter;
+    private ArrayAdapter<ToDoContact> listViewAdapter2;
 
     private ListView listView;
-    private DetailViewActivity detailViewActivity;
+    private ListView listView2;
+    private Activity Activity2;
+    private Activity Activity;
     private ToDo selectedItem;
-    public ContactListItem(DetailViewActivity detailViewActivity, ToDo selectedItem) {
+    private ToDo selectedItem2;
+
+    public ContactListItem(DetailViewActivity Activity, ToDo selectedItem) {
         try {
+            this.Activity = Activity;
             this.selectedItem=selectedItem;
-            this.listView = detailViewActivity.findViewById(R.id.listView2);
-            this.detailViewActivity = detailViewActivity;
+            this.listView = Activity.findViewById(R.id.listView2);
+
             listViewAdapter = createListViewAdapter(selectedItem.getToDoContactList());
             listViewAdapter.addAll(selectedItem.getToDoContactList());
             listView.setAdapter(listViewAdapter);
@@ -41,20 +49,47 @@ public class ContactListItem {
             int a=0;
         }
     }
+    public ContactListItem(MainActivity Activity, ToDo selectedItem){
+        this.Activity = Activity;
+        this.selectedItem=selectedItem;
+        listViewAdapter = createListViewAdapter(selectedItem.getToDoContactList());
+    }
+    public ContactListItem(MainActivity Activity,ToDo selectedItem, View view) {
+        try {
+            this.Activity = Activity;
+            this.selectedItem=selectedItem;
+            this.listView = Activity.findViewById(R.id.listView2);
 
-    private ArrayAdapter<ToDoContact> createListViewAdapter(List<ToDoContact> selectedListItem) {
-        return new ArrayAdapter<ToDoContact>(detailViewActivity, R.layout.activity_main_listitem, R.id.itemName) {
+            listViewAdapter = createListViewAdapter(selectedItem.getToDoContactList());
+            listViewAdapter.addAll(selectedItem.getToDoContactList());
+            listView.setAdapter(listViewAdapter);
+        }
+        catch (Exception e){
+            int a=0;
+        }
+    }
+    public ArrayAdapter<ToDoContact> createListViewAdapter(List<ToDoContact> selectedListItem) {
+        return new ArrayAdapter<ToDoContact>(Activity, R.layout.activity_detail_contact_listitem) {
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
                 View itemView = convertView;
 
-                itemView = detailViewActivity.getLayoutInflater().inflate(R.layout.activity_detail_contact_listitem, null);
+                itemView = Activity.getLayoutInflater().inflate(R.layout.activity_detail_contact_listitem, null);
 
                 itemNameView = itemView.findViewById(R.id.itemConactName);
                 AppCompatImageButton buttonEmail = itemView.findViewById(R.id.imageButtonEMail);
                 AppCompatImageButton buttonSMS = itemView.findViewById(R.id.imageButtonSMS);
                 AppCompatImageButton buttonDelete = itemView.findViewById(R.id.imageButtonDelete);
+
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int a=0;
+                        View parent = (View) v.getParent();
+
+                    }
+                });
 
                 buttonEmail.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -63,7 +98,7 @@ public class ContactListItem {
                         emailIntent.setData(Uri.parse("mailto:"+selectedListItem.get(position).getEmailAdress()));
                         emailIntent.putExtra(Intent.EXTRA_SUBJECT, selectedItem.getName());
                         emailIntent.putExtra(Intent.EXTRA_TEXT, selectedItem.getDescription());
-                        detailViewActivity.startActivity(Intent.createChooser(emailIntent, "Choose an Email client :"));
+                        Activity.startActivity(Intent.createChooser(emailIntent, "Choose an Email client :"));
                     }
                 });
                 buttonSMS.setOnClickListener(new View.OnClickListener() {
@@ -73,7 +108,7 @@ public class ContactListItem {
                         smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         smsIntent.setData(Uri.parse("smsto:" + selectedListItem.get(position).getPhoneNo())); // This ensures only SMS apps respond
                         smsIntent.putExtra("sms_body", selectedItem.getDescription());
-                        detailViewActivity.startActivity(smsIntent);
+                        Activity.startActivity(smsIntent);
                     }
                 });
                 buttonDelete.setOnClickListener(new View.OnClickListener() {
@@ -97,5 +132,6 @@ public class ContactListItem {
         };
 
     }
+
 
 }

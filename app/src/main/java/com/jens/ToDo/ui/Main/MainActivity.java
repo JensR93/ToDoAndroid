@@ -20,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
@@ -31,12 +32,15 @@ import com.google.android.material.snackbar.Snackbar;
 import com.jens.ToDo.R;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoApplication;
+import com.jens.ToDo.model.ToDoContact;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.tasks.CheckRemoteAvailableTask;
 import com.jens.ToDo.model.tasks.DeleteAllItemTask;
 import com.jens.ToDo.model.tasks.ReadAllItemsTask;
 import com.jens.ToDo.model.tasks.ReadItemTask;
 import com.jens.ToDo.model.tasks.UpdateItemTask;
+import com.jens.ToDo.ui.DetailView.ContactListItem;
+import com.jens.ToDo.ui.DetailView.Contactmanager;
 import com.jens.ToDo.ui.DetailView.DetailViewActivity;
 
 import java.util.Comparator;
@@ -55,13 +59,22 @@ public class MainActivity extends AppCompatActivity {
     //endregion
     
     private boolean favouriteSort = true;
-
+    private Contactmanager ccc;
     
     //region Variable
     private TextView itemNameView;
-    CheckBox itemReadyView;
+    private TextView itemDescriptionView;
+    private TextView itemExiry;
+    private TextView itemContactName;
+    private ListView itemContacts;
+
+    private CheckBox itemReadyView;
+    private CheckBox itemFavouriteView;
+
     private ListView listView;
+    private ListView listView2;
     private ArrayAdapter<ToDo> listViewAdapter;
+    private ArrayAdapter<ToDoContact> listViewAdapterContacts;
     private Intent newTodoIntent;
 
     private Intent settingsIntent;    //private ToDoDatabase db;
@@ -70,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     List<ToDo> dbItemList = null;
     private ProgressBar progressBar;
     private Comparator<ToDo> alphabeticComperator = (l, r) -> String.valueOf(l.getName()).compareTo(r.getName());
-
+    ArrayAdapter<ToDo> ArrayAdapterToDoItemContact;
     private Comparator<ToDo> expiryComperator = (l, r) -> String.valueOf(l.getExpiry()).compareTo(String.valueOf(r.getExpiry()));
     private Comparator<ToDo> undonedoneComperator = (l, r) -> Boolean.compare(l.isDone(),r.isDone());
 
@@ -79,11 +92,26 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ccc=new Contactmanager(this);
         setContentView(R.layout.activity_main);
         findElements();
-        createListener();
-        listViewAdapter = createListViewAdapter();
 
+
+/*       ArrayAdapterToDoItemContact = new ArrayAdapter<ToDo>(this, R.layout.activity_main_listitem_contacts, R.id.itemContacts) {
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View itemView = convertView;
+
+                itemView = getLayoutInflater().inflate(R.layout.activity_main_listitem, null);
+                itemContactName = findViewById(R.id.itemConactName);
+                itemContactName.setText("test");
+                return itemView;
+            }
+        };*/
+
+        listViewAdapter = createListViewAdapter(this);
+       // listViewAdapterContacts = createListViewAdapterContacts();
         myDialog=new Dialog(this);
 
         new CheckRemoteAvailableTask().run(available -> {
@@ -98,6 +126,8 @@ public class MainActivity extends AppCompatActivity {
             ToDoApplication ToDoApplication = (ToDoApplication) getApplication();
             crudOperations = (IToDoCRUDOperations) ToDoApplication.getCRUDOperations();
             readDatabase();
+            createListener();
+
         });
     }
     @Override
@@ -287,21 +317,38 @@ public class MainActivity extends AppCompatActivity {
         newTodoIntentForEdit.putExtra(DetailViewActivity.ARG_ITEM_ID, clickedToDo.getId());
         startActivityForResult(newTodoIntentForEdit, CALL_DETAILVIEW_FOR_EDIT);
     }
-    private ArrayAdapter<ToDo> createListViewAdapter() {
-        return new ArrayAdapter<ToDo>(this, R.layout.activity_main_listitem, R.id.itemName) {
+
+    private ArrayAdapter<ToDo> createListViewAdapter(MainActivity mainActivity) {
+
+        ArrayAdapter<ToDo> toDoArrayAdapter = new ArrayAdapter<ToDo>(this, R.layout.activity_main_listitem, R.id.itemName) {
+
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
                 View itemView = convertView;
-
+                ToDo currentItem = getItem(position);
                 itemView = getLayoutInflater().inflate(R.layout.activity_main_listitem, null);
 
                 itemNameView = itemView.findViewById(R.id.itemName);
-                ToDo currentItem = getItem(position);
-                itemReadyView = itemView.findViewById(R.id.itemReady);
 
+                itemDescriptionView = itemView.findViewById(R.id.itemDescription);
+                itemExiry= itemView.findViewById(R.id.itemExiry);
+/*                itemContacts= itemView.findViewById(R.id.itemContacts);
+                itemContacts.setAdapter(ArrayAdapterToDoItemContact);*/
+
+                itemReadyView = itemView.findViewById(R.id.itemReady);
+                itemFavouriteView=itemView.findViewById(R.id.itemFavourite);
                 if (itemNameView != null && itemReadyView != null) {
+
+
+
                     itemNameView.setText(currentItem.toString());
+
+                    itemDescriptionView.setText(currentItem.getDescription());
+                    if(currentItem.getExpiry()!=null) {
+                        itemExiry.setText(currentItem.getExpiry().toString());
+                    }
+
                     long now= new java.sql.Timestamp(System.currentTimeMillis()).getTime();
                     if(currentItem.getExpiry()!=null&&currentItem.getExpiry()<now)
                     {
@@ -310,6 +357,9 @@ public class MainActivity extends AppCompatActivity {
 
                     itemReadyView.setOnCheckedChangeListener(null);
                     itemReadyView.setChecked(currentItem.isDone());
+                    itemFavouriteView.setChecked(currentItem.isFavourite());
+
+
                     itemReadyView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -321,12 +371,50 @@ public class MainActivity extends AppCompatActivity {
                             });
                         }
                     });
+                    itemFavouriteView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            currentItem.setFavourite(isChecked);
+                            new UpdateItemTask(crudOperations).run(currentItem, updated -> {
+                                if (updated) {
+                                    updateSort();
+                                }
+                            });
+                        }
+                    });
+
+
+                    listView2=itemView.findViewById(R.id.listView2);
+                    ToDo currentItem2= ccc.readContactFromDataItem(currentItem);
+                    ContactListItem contactListItem = new ContactListItem(mainActivity,currentItem2);
+                     listViewAdapterContacts= contactListItem.createListViewAdapter(currentItem2.getToDoContactList());
+                    listViewAdapterContacts.addAll(currentItem2.getToDoContactList());
+                    listView2.setAdapter(listViewAdapterContacts);
+                    listView2.setOnItemClickListener(null);
+                    listView2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            int a=0;
+                        }
+                    });
+
                 }
+
+
                 return itemView;
+
             }
+
+
         };
 
+
+
+
+
+return toDoArrayAdapter;
     }
+
 
 
     private void updateSort() {
