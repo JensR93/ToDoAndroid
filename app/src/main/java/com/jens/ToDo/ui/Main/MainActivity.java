@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         viewItemList=new ArrayList<View>();
         mySettings=new Settings(true,true,true);
 
-        ccc=new Contactmanager(this);
+        //ccc=new Contactmanager(this);
         setContentView(R.layout.activity_main);
         findElements();
 
@@ -409,7 +409,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<ToDo> createListViewAdapter(MainActivity mainActivity) {
 
        ArrayAdapter<ToDo> a =   new ArrayAdapter<ToDo>(this, R.layout.activity_main_listitem, R.id.itemName) {
-        Contactmanager ccc = new Contactmanager(mainActivity);
+
 
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {

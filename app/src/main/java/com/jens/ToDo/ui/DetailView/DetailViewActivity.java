@@ -23,9 +23,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -36,6 +38,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.jens.ToDo.R;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoApplication;
+import com.jens.ToDo.model.ToDoContact;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.tasks.DeleteItemTask;
 import com.jens.ToDo.model.tasks.UpdateItemTask;
@@ -47,6 +50,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
+import java.util.List;
 
 public class DetailViewActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -68,7 +72,8 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     private ToDo selectedItem;
     private MenuItem saveMenuItem, deleteMenuItem;
 
-
+    private Contactmanager cccc;
+    private ContactListItem contactListItem;
     int mYear, mMonth, mDay, mHour, mMinute;
 
     //endregion
@@ -89,6 +94,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        cccc = new Contactmanager(this);
         setContentView(R.layout.activity_detail_view);
 
         findElements();
@@ -106,7 +112,9 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
             loadToDoObject(itemId);
         } else {
             selectedItem = new ToDo();
+            contactListItem = new ContactListItem(DetailViewActivity.this, selectedItem);
         }
+
 
 
     }
@@ -186,8 +194,8 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CALL_CONTACT_PICK && resultCode == Activity.RESULT_OK) {
             Log.i(getClass().getSimpleName(), "got intent from contact picker" + data);
-            Contactmanager ccc = new Contactmanager(this);
-            selectedItem = ccc.showAddContactDetails(data.getData(), selectedItem);
+
+            selectedItem = cccc.showAddContactDetails(data.getData(), selectedItem);
             textImportContacts.setText(selectedItem.getContactStringMultiLine());
             //textImportContacts.setText(ccc.showAddContactDetails(data.getData(),selectedItem));
         }
@@ -236,7 +244,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void loadToDoObject(long itemId) {
-        Contactmanager cccc = new Contactmanager(this);
+
         new AsyncTask<Long, Void, ToDo>() {
             @Override
             protected ToDo doInBackground(Long... longs) {
@@ -279,12 +287,18 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                     }
 
                     //Contactlistitem
-                    ContactListItem contactListItem = new ContactListItem(DetailViewActivity.this, selectedItem);
-
-
+                    contactListItem = new ContactListItem(DetailViewActivity.this, selectedItem);
+                    createContactList();
                 }
             }
         }.execute(itemId);
+    }
+
+    public void createContactList() {
+        ArrayAdapter<ToDoContact> listViewAdapter = contactListItem.createListViewAdapter(selectedItem.getToDoContactList());
+        listViewAdapter.addAll(selectedItem.getToDoContactList());
+        ListView listView = DetailViewActivity.this.findViewById(R.id.listView2);
+        listView.setAdapter(listViewAdapter);
     }
 
     private void CreateListener() {
