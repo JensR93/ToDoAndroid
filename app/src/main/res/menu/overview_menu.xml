@@ -2,10 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item android:title="Contacts" android:id="@+id/showColoumns"
+        android:icon="@drawable/outline_settings_white_36" app:showAsAction="always"></item>
     <item android:title="Contacts" android:id="@+id/createToDo"
-        android:icon="@drawable/outline_create_white_36" app:showAsAction="always"></item>
+        android:icon="@drawable/outline_add_white_36" app:showAsAction="always"></item>
     <item android:title="Contacts" android:id="@+id/showSort"
         android:icon="@drawable/baseline_sort_white_36dp" app:showAsAction="always"></item>
     <item android:title="Contacts" android:id="@+id/DeleteAll"
         android:icon="@drawable/outline_delete_forever_white_36" app:showAsAction="always"></item>
+
 </menu>

@@ -1,10 +1,15 @@
 package com.jens.ToDo.model;
 
+import android.app.Activity;
+import android.database.Cursor;
+import android.provider.ContactsContract;
+
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.google.gson.annotations.SerializedName;
+import com.jens.ToDo.ui.DetailView.Contactmanager;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -139,4 +144,5 @@ public class ToDo implements Serializable {
             }
         }
     }
+
 }

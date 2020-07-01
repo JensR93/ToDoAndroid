@@ -19,7 +19,7 @@ public class RoomToDoCRUDOperationsImpl implements IToDoCRUDOperations {
     private ToDoDao toToDao;
 
     public RoomToDoCRUDOperationsImpl(Context context) {
-        ToDoDatabase db = Room.databaseBuilder(context.getApplicationContext(),ToDoDatabase.class,"ToDoNEW-db").build();
+        ToDoDatabase db = Room.databaseBuilder(context.getApplicationContext(),ToDoDatabase.class,"ToDo-db").build();
         toToDao=db.getDao();
     }
 

@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
+
     android:layout_margin="16dp">
     <com.google.android.material.textfield.TextInputEditText
         android:singleLine="true"
@@ -11,10 +12,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
     </com.google.android.material.textfield.TextInputEditText>
+
     <com.google.android.material.textfield.TextInputEditText
+        android:height="200dp"
+        android:gravity="left|top"
         android:maxLines="3"
+        android:inputType="textMultiLine"
         android:singleLine="true"
-        android:imeOptions="actionDone"
         android:id="@+id/inputDescription"
         android:hint="@string/hintBeschreibung"
         android:layout_width="match_parent"
@@ -50,25 +54,35 @@
         android:focusable="false"
         android:hint="@string/dueTime">
     </EditText>
+
     <ListView
         android:id="@+id/listView2"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-    </ListView>
+        android:layout_height="wrap_content"></ListView>
+
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kontakte importieren"
+        android:id="@+id/buttonImportContacts"></Button>
+    <com.google.android.material.textfield.TextInputEditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/inputID"
+
+        android:layout_marginBottom="16dp"
+        android:enabled="false"
+        android:id="@+id/inputID">
+    </com.google.android.material.textfield.TextInputEditText>
     <androidx.appcompat.widget.AppCompatTextView
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:textSize="24dp"
         android:hint="@string/detailHintImportContacts"
         android:id="@+id/textImportContacts"
+        android:visibility="invisible"
         >
     </androidx.appcompat.widget.AppCompatTextView>
-    <com.google.android.material.textfield.TextInputEditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/inputID"
-        android:layout_marginBottom="16dp"
-        android:enabled="false"
-        android:id="@+id/inputID">
-    </com.google.android.material.textfield.TextInputEditText>
+
 </LinearLayout>

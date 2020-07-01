@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListAdapter;
@@ -30,6 +31,7 @@ import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.jens.ToDo.R;
+import com.jens.ToDo.model.Settings;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoApplication;
 import com.jens.ToDo.model.ToDoContact;
@@ -43,14 +45,22 @@ import com.jens.ToDo.ui.DetailView.ContactListItem;
 import com.jens.ToDo.ui.DetailView.Contactmanager;
 import com.jens.ToDo.ui.DetailView.DetailViewActivity;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     Dialog myDialog;
+    Settings mySettings;
+    ListView listView;
 
-    
+    List <View> viewItemList;
     //region Constants
     public static final int CALL_DETAILVIEW_FOR_CREATE = 0;
     public static final int CALL_DETAILVIEW_FOR_EDIT = 1;
@@ -62,17 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private Contactmanager ccc;
     
     //region Variable
-    private TextView itemNameView;
-    private TextView itemDescriptionView;
-    private TextView itemExiry;
-    private TextView itemContactName;
-    private ListView itemContacts;
 
-    private CheckBox itemReadyView;
-    private CheckBox itemFavouriteView;
-
-    private ListView listView;
-    private ListView listView2;
     private ArrayAdapter<ToDo> listViewAdapter;
     private ArrayAdapter<ToDoContact> listViewAdapterContacts;
     private Intent newTodoIntent;
@@ -92,6 +92,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        viewItemList=new ArrayList<View>();
+        mySettings=new Settings(true,true,true);
+
         ccc=new Contactmanager(this);
         setContentView(R.layout.activity_main);
         findElements();
@@ -111,7 +114,8 @@ public class MainActivity extends AppCompatActivity {
         };*/
 
         listViewAdapter = createListViewAdapter(this);
-       // listViewAdapterContacts = createListViewAdapterContacts();
+        updateColoumSort();
+
         myDialog=new Dialog(this);
 
         new CheckRemoteAvailableTask().run(available -> {
@@ -138,6 +142,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId()==R.id.showColoumns){
+            showColoumnPopup();
+            return true;
+        }
         if(item.getItemId()==R.id.createToDo){
             newTodoIntent = new Intent(this, DetailViewActivity.class);
             startActivityForResult(newTodoIntent, CALL_DETAILVIEW_FOR_CREATE);
@@ -186,6 +194,86 @@ public class MainActivity extends AppCompatActivity {
             //finish();
         });
     }
+
+    private void showColoumnPopup() {
+
+        myDialog.setContentView(R.layout.activity_main_coloumn_popup);
+        Button buttonOk = myDialog.findViewById(R.id.itemButtonOk);
+        CheckBox checkShowDescription = myDialog.findViewById(R.id.itemDescription);
+        CheckBox checkShowExpiry = myDialog.findViewById(R.id.itemExpiry);
+        CheckBox checkShowBookmark = myDialog.findViewById(R.id.itemBoomark);
+
+
+        checkShowBookmark.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mySettings.setShowBookmark(isChecked);
+
+                updateColoumSort();
+
+            }
+        });
+        checkShowDescription.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mySettings.setShowDescription(isChecked);
+                updateColoumSort();
+            }
+        });
+        checkShowExpiry.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mySettings.setShowExpiry(isChecked);
+                updateColoumSort();
+            }
+        });
+        buttonOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myDialog.dismiss();
+
+            }
+        });
+
+        checkShowBookmark.setChecked(mySettings.isShowBookmark());
+        checkShowDescription.setChecked(mySettings.isShowDescription());
+        checkShowExpiry.setChecked(mySettings.isShowExpiry());
+        myDialog.show();
+
+
+    }
+
+    private void updateColoumSort() {
+        if(viewItemList.size()>0){
+        for(int i =0;i<viewItemList.size();i++){
+            View v =  viewItemList.get(i);
+            CheckBox itemBookmark = v.findViewById(R.id.itemFavourite);
+
+            TextView itemDescriptionView = v.findViewById(R.id.itemDescription);
+            TextView itemExiry= v.findViewById(R.id.itemExiry);
+
+            if(mySettings.isShowDescription()){
+                itemDescriptionView.setHeight(86);
+            }
+            else{
+                itemDescriptionView.setHeight(0);
+            }
+            if(mySettings.isShowExpiry()){
+                itemExiry.setHeight(48);
+            }
+            else{
+                itemExiry.setHeight(0);
+            }
+            if(mySettings.isShowBookmark()){
+                itemBookmark.setWidth(80);
+            }
+            else{
+                itemBookmark.setWidth(0);
+            }
+
+        }}
+    }
+
 
     private void showSortPopup() {
 
@@ -320,24 +408,24 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayAdapter<ToDo> createListViewAdapter(MainActivity mainActivity) {
 
-        ArrayAdapter<ToDo> toDoArrayAdapter = new ArrayAdapter<ToDo>(this, R.layout.activity_main_listitem, R.id.itemName) {
+       ArrayAdapter<ToDo> a =   new ArrayAdapter<ToDo>(this, R.layout.activity_main_listitem, R.id.itemName) {
+        Contactmanager ccc = new Contactmanager(mainActivity);
 
-            @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
                 View itemView = convertView;
                 ToDo currentItem = getItem(position);
                 itemView = getLayoutInflater().inflate(R.layout.activity_main_listitem, null);
+                viewItemList.add(itemView);
+                TextView itemNameView = itemView.findViewById(R.id.itemName);
 
-                itemNameView = itemView.findViewById(R.id.itemName);
-
-                itemDescriptionView = itemView.findViewById(R.id.itemDescription);
-                itemExiry= itemView.findViewById(R.id.itemExiry);
+                TextView itemDescriptionView = itemView.findViewById(R.id.itemDescription);
+                TextView itemExiry= itemView.findViewById(R.id.itemExiry);
 /*                itemContacts= itemView.findViewById(R.id.itemContacts);
                 itemContacts.setAdapter(ArrayAdapterToDoItemContact);*/
 
-                itemReadyView = itemView.findViewById(R.id.itemReady);
-                itemFavouriteView=itemView.findViewById(R.id.itemFavourite);
+                CheckBox itemReadyView = itemView.findViewById(R.id.itemReady);
+                CheckBox itemFavouriteView=itemView.findViewById(R.id.itemFavourite);
                 if (itemNameView != null && itemReadyView != null) {
 
 
@@ -346,13 +434,23 @@ public class MainActivity extends AppCompatActivity {
 
                     itemDescriptionView.setText(currentItem.getDescription());
                     if(currentItem.getExpiry()!=null) {
-                        itemExiry.setText(currentItem.getExpiry().toString());
+
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
+
+                            LocalDateTime date =LocalDateTime.ofInstant(Instant.ofEpochMilli(currentItem.getExpiry()), ZoneId.systemDefault());
+
+                            LocalTime localTime = date.toLocalTime();
+
+                            String localDateString = formatter.format(date);
+
+                        itemExiry.setText(localDateString+" "+localTime);
                     }
 
                     long now= new java.sql.Timestamp(System.currentTimeMillis()).getTime();
                     if(currentItem.getExpiry()!=null&&currentItem.getExpiry()<now)
                     {
                         itemNameView.setTextColor(Color.RED);
+                        itemExiry.setTextColor(Color.RED);
                     }
 
                     itemReadyView.setOnCheckedChangeListener(null);
@@ -384,19 +482,7 @@ public class MainActivity extends AppCompatActivity {
                     });
 
 
-                    listView2=itemView.findViewById(R.id.listView2);
-                    ToDo currentItem2= ccc.readContactFromDataItem(currentItem);
-                    ContactListItem contactListItem = new ContactListItem(mainActivity,currentItem2);
-                     listViewAdapterContacts= contactListItem.createListViewAdapter(currentItem2.getToDoContactList());
-                    listViewAdapterContacts.addAll(currentItem2.getToDoContactList());
-                    listView2.setAdapter(listViewAdapterContacts);
-                    listView2.setOnItemClickListener(null);
-                    listView2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            int a=0;
-                        }
-                    });
+
 
                 }
 
@@ -408,11 +494,7 @@ public class MainActivity extends AppCompatActivity {
 
         };
 
-
-
-
-
-return toDoArrayAdapter;
+return  a;
     }
 
 

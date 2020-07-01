@@ -3,13 +3,21 @@
     android:orientation="horizontal"
     android:gravity="left"
     android:layout_weight="1"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:duplicateParentState="true"
     android:padding="10dp"
     android:layout_height="wrap_content">
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:id="@+id/itemContactPhoto"
+        android:src="@drawable/outline_contacts_24"
+        android:paddingRight="5dp"
+        ></ImageView>
     <TextView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/itemConactName"
-        android:minWidth="100dp"
+        android:minWidth="250dp"
+        android:maxWidth="250dp"
         android:textSize="16dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"></TextView>

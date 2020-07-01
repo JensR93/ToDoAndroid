@@ -2,73 +2,36 @@ package com.jens.ToDo.ui.DetailView;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentUris;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.ContactsContract;
-import android.util.Log;
 
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoContact;
 import com.jens.ToDo.ui.Main.MainActivity;
 
+import java.io.ByteArrayInputStream;
+
 public class Contactmanager {
 
-    Activity detailViewActivity;
+    public Activity activity;
 
     public Contactmanager(DetailViewActivity detailViewActivity) {
-        this.detailViewActivity = detailViewActivity;
+        this.activity = detailViewActivity;
     }
     public Contactmanager(MainActivity detailViewActivity) {
-        this.detailViewActivity = detailViewActivity;
+        this.activity = detailViewActivity;
     }
-    public ToDo readContactFromDataItem(ToDo dataItem){
 
-        for (String stringContactId: dataItem.getContacts()) {
-            String retval ="";
-            String name = null;
-            String phoneNumber =null;
-            String email = null;
-            final Cursor phoneCursor = detailViewActivity.getContentResolver().query(
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                    new String[] {
-                            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                            ContactsContract.CommonDataKinds.Phone.NUMBER,
-                    },
-                    ContactsContract.Data.CONTACT_ID + "=?",
-                    new String[] {String.valueOf(stringContactId)}, null);
-            final Cursor EmailCursor = detailViewActivity.getContentResolver().query(
-                    ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-                    new String[] {
-                            ContactsContract.CommonDataKinds.Email.ADDRESS,
-                    },
-                    ContactsContract.Data.CONTACT_ID + "=?",
-                    new String[] {String.valueOf(stringContactId)}, null);
-
-            try {
-                final int idxName = phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
-                final int idxPhone = phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER);
-                final int idxEmail = EmailCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.ADDRESS);
-                if (phoneCursor.moveToNext()) {
-                     phoneNumber = phoneCursor.getString(idxPhone);
-                     name = phoneCursor.getString(idxName);
-                    retval=retval+"\n"+name+"("+stringContactId+")";
-                }
-                if (EmailCursor.moveToNext()) {
-                    email = EmailCursor.getString(idxEmail);
-                }
-            } finally {
-                phoneCursor.close();
-            }
-            dataItem.addToDoContact(new ToDoContact(stringContactId,name,phoneNumber,email));
-
-        }
-
-        return dataItem;
-    }
 
     private ToDoContact readToDOContactFromDevice(Uri contactUri){
-        Cursor contactsCursor = detailViewActivity.getContentResolver().query(contactUri, null, null, null);
+        String[] phonenNmber = new String[10];
+        String[] emailAdress2 = new String[10];
+        Cursor contactsCursor = activity.getContentResolver().query(contactUri, null, null, null);
         if (contactsCursor.moveToFirst()) {
             String contactName = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
             String contactId = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
@@ -79,27 +42,29 @@ public class Contactmanager {
             //Log.i(detailViewActivity.LOGGING_TAG, String.format("contactID: %s", contactId));
 
             if (verifyReadContactPermission()) {
-                Cursor phoneCursor = detailViewActivity.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?", new String[]{contactId}, null);
 
-                Cursor pCur = detailViewActivity.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+
+                Cursor pCur = activity.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                         null,ContactsContract.CommonDataKinds.Phone.CONTACT_ID+ " = ?", new String[]{contactId}, null);
 
                 while (pCur.moveToNext()) {
                     // Do something with phones
+                    phonenNmber[0] = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                     phoneNumber = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+
                     //Log.i(detailViewActivity.LOGGING_TAG, String.format("phone: %s", phoneNumber));
-                    Cursor emailCur = detailViewActivity.getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                    Cursor emailCur = activity.getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
                             null,ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",new String[]{contactId}, null);
                     if (emailCur.moveToNext()) {
                         emailAdress = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+                        emailAdress2[0]=emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
                         //    Log.i(detailViewActivity.LOGGING_TAG, String.format("email: %s", emailAdress));
                     }
                     emailCur.close();
                 }
 
-                return new ToDoContact(contactId,contactName,phoneNumber,emailAdress);
-
+                return new ToDoContact(contactId,contactName,phonenNmber,emailAdress2,null);
+                //return new ToDoContact();
             }
         }
         return null;
@@ -107,6 +72,7 @@ public class Contactmanager {
 
     public ToDo showAddContactDetails(Uri contactUri, ToDo selectedItem) {
         String retval ="";
+
         ToDoContact c =  readToDOContactFromDevice(contactUri);
         selectedItem.addToDoContact(c);
         selectedItem.addContact(c.getID());
@@ -121,12 +87,102 @@ public class Contactmanager {
     }
 
     private boolean verifyReadContactPermission() {
-        int hasReadContactsPermission = detailViewActivity.checkSelfPermission(Manifest.permission.READ_CONTACTS);
+        int hasReadContactsPermission = activity.checkSelfPermission(Manifest.permission.READ_CONTACTS);
         if (hasReadContactsPermission == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
-            detailViewActivity.requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 4);
+            activity.requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 4);
             return false;
         }
     }
+
+
+    public void readContactFromDataItem(ToDo toDo){
+        if (verifyReadContactPermission()) {
+            String[] phonenNmber = new String[10];
+            String[] emailAdress = new String[10];
+
+            for (String stringContactId : toDo.getContacts()){
+
+
+                Bitmap photo;
+                String retval = "";
+                String name = null;
+                String phoneNumber = null;
+                String email = null;
+
+                final Cursor phoneCursor = activity.getContentResolver().query(
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        new String[]{
+                                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                                ContactsContract.CommonDataKinds.Phone.NUMBER,
+                        },
+                        ContactsContract.Data.CONTACT_ID + "=?",
+                        new String[]{String.valueOf(stringContactId)}, null);
+                final Cursor EmailCursor = activity.getContentResolver().query(
+                        ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                        new String[]{
+                                ContactsContract.CommonDataKinds.Email.ADDRESS,
+                        },
+                        ContactsContract.Data.CONTACT_ID + "=?",
+                        new String[]{String.valueOf(stringContactId)}, null);
+
+                try {
+
+                    final int idxName = phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                    final int idxPhone = phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                    final int idxEmail = EmailCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.ADDRESS);
+
+
+                    //phonenNmber=new String[phoneCursor]
+                    int count = 0;
+                    while (phoneCursor.moveToNext()) {
+                        phoneNumber = phoneCursor.getString(idxPhone);
+                        phonenNmber[count] = phoneCursor.getString(idxPhone);
+                        name = phoneCursor.getString(idxName);
+                        retval = retval + "\n" + name + "(" + stringContactId + ")";
+                        count++;
+                    }
+                    count = 0;
+                    while (EmailCursor.moveToNext()) {
+                        email = EmailCursor.getString(idxEmail);
+                        emailAdress[count] = EmailCursor.getString(idxEmail);
+                        count++;
+                    }
+
+
+                    photo = openPhoto(Long.parseLong(stringContactId));
+                } finally {
+                    phoneCursor.close();
+                }
+
+                toDo.addToDoContact(new ToDoContact(stringContactId, name, phonenNmber, emailAdress, photo));
+
+
+            }
+        }
+    }
+
+    private Bitmap openPhoto(long contactId) {
+        Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId);
+        Uri photoUri = Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
+        Cursor cursor = activity.getContentResolver().query(photoUri,
+                new String[] {ContactsContract.Contacts.Photo.PHOTO}, null, null, null);
+        if (cursor == null) {
+            return null;
+        }
+        try {
+            if (cursor.moveToFirst()) {
+                byte[] data = cursor.getBlob(0);
+                if (data != null) {
+                    return BitmapFactory.decodeStream(new ByteArrayInputStream(data));
+                }
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
+
+    }
+
 }

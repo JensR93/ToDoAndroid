@@ -23,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -61,7 +62,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     private TextView textImportContacts;
     private AppCompatCheckBox checkDone;
     private AppCompatCheckBox checkFavourite;
-
+    private Button buttonImportContacts;
     private IToDoCRUDOperations crudOperations;
 
     private ToDo selectedItem;
@@ -231,6 +232,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         checkDone = findViewById(R.id.inputDone);
         checkFavourite = findViewById(R.id.inputFavourite);
         textImportContacts = findViewById(R.id.textImportContacts);
+        buttonImportContacts=findViewById(R.id.buttonImportContacts);
     }
 
     private void loadToDoObject(long itemId) {
@@ -257,8 +259,10 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
                     // textImportContacts.setText(cccc.readContactFromDataItem(dataItem));
 
-                    dataItem = cccc.readContactFromDataItem(dataItem);
+                    //dataItem = cccc.readContactFromDataItem(dataItem);
 
+                    //selectedItem.readContactFromDataItem(cccc);
+                    cccc.readContactFromDataItem(selectedItem);
                     textImportContacts.setText(dataItem.getContactStringMultiLine());
                     if (dataItem.getExpiry() != null) {
 
@@ -330,7 +334,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                 return false;
             }
         });
-        textImportContacts.setOnClickListener(new TextView.OnClickListener() {
+        buttonImportContacts.setOnClickListener(new TextView.OnClickListener() {
 
             @Override
             public void onClick(View v) {

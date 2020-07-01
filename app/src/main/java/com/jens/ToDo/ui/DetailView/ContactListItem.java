@@ -2,10 +2,15 @@ package com.jens.ToDo.ui.DetailView;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityRecord;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -18,43 +23,24 @@ import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoContact;
 import com.jens.ToDo.ui.Main.MainActivity;
 
+import java.io.InputStream;
 import java.util.List;
 
 public class ContactListItem {
 
 
     private TextView itemNameView;
-    private TextView itemNameView2;
     private ArrayAdapter<ToDoContact> listViewAdapter;
-    private ArrayAdapter<ToDoContact> listViewAdapter2;
 
     private ListView listView;
-    private ListView listView2;
-    private Activity Activity2;
     private Activity Activity;
     private ToDo selectedItem;
-    private ToDo selectedItem2;
 
-    public ContactListItem(DetailViewActivity Activity, ToDo selectedItem) {
-        try {
-            this.Activity = Activity;
-            this.selectedItem=selectedItem;
-            this.listView = Activity.findViewById(R.id.listView2);
+    public ContactListItem(){
 
-            listViewAdapter = createListViewAdapter(selectedItem.getToDoContactList());
-            listViewAdapter.addAll(selectedItem.getToDoContactList());
-            listView.setAdapter(listViewAdapter);
-        }
-        catch (Exception e){
-            int a=0;
-        }
     }
-    public ContactListItem(MainActivity Activity, ToDo selectedItem){
-        this.Activity = Activity;
-        this.selectedItem=selectedItem;
-        listViewAdapter = createListViewAdapter(selectedItem.getToDoContactList());
-    }
-    public ContactListItem(MainActivity Activity,ToDo selectedItem, View view) {
+
+    public ContactListItem(Activity Activity, ToDo selectedItem) {
         try {
             this.Activity = Activity;
             this.selectedItem=selectedItem;
@@ -81,6 +67,10 @@ public class ContactListItem {
                 AppCompatImageButton buttonEmail = itemView.findViewById(R.id.imageButtonEMail);
                 AppCompatImageButton buttonSMS = itemView.findViewById(R.id.imageButtonSMS);
                 AppCompatImageButton buttonDelete = itemView.findViewById(R.id.imageButtonDelete);
+                ImageView imageView = itemView.findViewById(R.id.itemContactPhoto);
+                if(selectedListItem.get(position).getPhoto()!=null){
+                    imageView.setImageBitmap(selectedListItem.get(position).getPhoto());
+                }
 
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override

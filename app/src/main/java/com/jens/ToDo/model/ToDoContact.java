@@ -1,20 +1,35 @@
 package com.jens.ToDo.model;
 
+import android.graphics.Bitmap;
+
 public class ToDoContact {
     private String ID;
     private String name;
-    private String phoneNo;
-    private String emailAdress;
+    private String[] phoneNo;
+    private String[] emailAdress;
 
-    public ToDoContact( String ID,String name, String phoneNo, String emailAdress) {
-        this.name = name;
+    private Bitmap photo;
+
+
+    public ToDoContact(String ID, String name, String[] phoneNo, String[] emailAdress, Bitmap photo) {
         this.ID = ID;
+        this.name = name;
         this.phoneNo = phoneNo;
         this.emailAdress = emailAdress;
+        this.photo = photo;
     }
+
 
     public String getName() {
         return name;
+    }
+
+    public Bitmap getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(Bitmap photo) {
+        this.photo = photo;
     }
 
     public void setName(String name) {
@@ -29,19 +44,21 @@ public class ToDoContact {
         this.ID = ID;
     }
 
-    public String getPhoneNo() {
+    public String[] getPhoneNo() {
         return phoneNo;
     }
 
-    public void setPhoneNo(String phoneNo) {
+    public void setPhoneNo(String[] phoneNo) {
         this.phoneNo = phoneNo;
     }
 
-    public String getEmailAdress() {
+    public String[] getEmailAdress() {
         return emailAdress;
     }
 
-    public void setEmailAdress(String emailAdress) {
+    public void setEmailAdress(String[] emailAdress) {
         this.emailAdress = emailAdress;
     }
+
+
 }

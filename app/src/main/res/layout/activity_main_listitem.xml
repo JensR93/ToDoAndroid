@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <GridLayout android:orientation="horizontal"
-    android:gravity="center"
+    android:gravity="top"
     android:layout_weight="1"
     android:padding="10dp"
     android:layout_width="match_parent"
@@ -21,22 +21,28 @@
     <TextView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/itemName"
         android:minWidth="200dp"
+
         android:maxWidth="330dp"
         android:textSize="30dp"
         android:layout_row="0"
         android:layout_width="280dp"
         android:layout_column="2"
+        android:width="96px"
         android:layout_height="wrap_content"></TextView>
     <androidx.appcompat.widget.AppCompatCheckBox
         android:focusable="false"
         android:button="@drawable/custom_checkbox"
         android:layout_column="1"
+        android:width="80px"
+
         android:layout_row="0"
         android:id="@+id/itemFavourite"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"></androidx.appcompat.widget.AppCompatCheckBox>
     <TextView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/itemDescription"
+        android:height="86px"
+        android:gravity="top|left"
         android:minWidth="200dp"
         android:maxWidth="330dp"
         android:textSize="12dp"
@@ -47,21 +53,13 @@
     <TextView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/itemExiry"
         android:minWidth="200dp"
+        android:height="48px"
         android:maxWidth="330dp"
         android:textSize="12dp"
         android:layout_width="230dp"
         android:layout_column="2"
-        android:layout_row="3"
-        android:layout_height="wrap_content"></TextView>
-    <ListView
-        android:id="@+id/listView2"
         android:layout_row="1"
-        android:layout_column="2"
-        android:maxWidth="330dp"
-        android:layout_width="280dp"
-        android:duplicateParentState="true"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"></TextView>
 
-    </ListView>
 
     </GridLayout>
