@@ -3,6 +3,7 @@ package com.jens.ToDo.model.impl;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.User;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
+import com.jens.ToDo.ui.Main.MainActivity;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +17,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetroFitToDoRUDOperationsImpl implements IToDoCRUDOperations {
     @Override
     public Call<Boolean> authenticateUser(User user) {
-        return webAPIClient.authenticateUser(user);
+        Call<Boolean> b =  webAPIClient.authenticateUser(user);
+        return b;
     }
 
     private iToDoWebAPI webAPIClient;
@@ -102,6 +104,16 @@ public class RetroFitToDoRUDOperationsImpl implements IToDoCRUDOperations {
             e.printStackTrace();
             return false;
         }
+        return false;
+    }
+
+    @Override
+    public boolean syncAllItemsWithLocal() {
+        return false;
+    }
+
+    @Override
+    public boolean syncAllItemsWithRemote(MainActivity activity) {
         return false;
     }
 

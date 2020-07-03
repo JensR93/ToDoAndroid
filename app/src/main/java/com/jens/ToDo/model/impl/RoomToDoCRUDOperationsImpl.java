@@ -9,6 +9,7 @@ import com.jens.ToDo.model.User;
 import com.jens.ToDo.model.abstracts.ToDoDatabase;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.interfaces.ToDoDao;
+import com.jens.ToDo.ui.Main.MainActivity;
 
 import java.util.List;
 
@@ -25,14 +26,18 @@ public class RoomToDoCRUDOperationsImpl implements IToDoCRUDOperations {
 
     @Override
     public ToDo createItem(ToDo item) {
-        long returnID= toToDao.create(item);
-        item.setId(returnID);
+        if(item!=null)
+        {
+            long returnID= toToDao.create(item);
+            item.setId(returnID);
+        }
         return item;
     }
 
     @Override
     public List<ToDo> readAllItems() {
-        return toToDao.readAll();
+        List<ToDo> toDoList = toToDao.readAll();
+        return toDoList;
     }
 
     @Override
@@ -67,6 +72,15 @@ public class RoomToDoCRUDOperationsImpl implements IToDoCRUDOperations {
 
         return false;
 
+    }
+
+    @Override
+    public boolean syncAllItemsWithLocal() {
+        return false;
+    }
+    @Override
+    public boolean syncAllItemsWithRemote(MainActivity activity) {
+        return false;
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.jens.ToDo.ui.DetailView;
 import android.Manifest;
 import android.app.Activity;
 import android.content.ContentUris;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -21,12 +22,39 @@ public class Contactmanager {
 
     public DetailViewActivity activity;
 
+
     public Contactmanager(DetailViewActivity detailViewActivity) {
         this.activity = detailViewActivity;
     }
 
 
+    public void sendEmail(String adress, String textToWrite, String subject){
+        if(activity!=null) {
+            Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+            emailIntent.setData(Uri.parse("mailto:" + adress));
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+            emailIntent.putExtra(Intent.EXTRA_TEXT, textToWrite);
+            activity.startActivity(Intent.createChooser(emailIntent, "Choose an Email client :"));
+        }
+    }
+    public void sendSMS(String number, String textToWrite){
+        if(activity!=null) {
+            Intent smsIntent = new Intent(Intent.ACTION_SENDTO);
+            smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            smsIntent.setData(Uri.parse("smsto:" + number)); // This ensures only SMS apps respond
+            smsIntent.putExtra("sms_body", textToWrite);
+            activity.startActivity(smsIntent);
+        }
+    }
 
+    public void startCall(String number){
+        if(activity!=null) {
+            Intent telIntent = new Intent(Intent.ACTION_DIAL);
+            telIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            telIntent.setData(Uri.parse("tel:" +number));
+            activity.startActivity(telIntent);
+        }
+    }
     private String readToDOContactFromDevice(Uri contactUri,ToDo selectedItem){
         String[] phonenNmber = new String[10];
         String contactId="";
@@ -102,10 +130,11 @@ public class Contactmanager {
 
     public void readContactFromDataItem(ToDo toDo){
         if (verifyReadContactPermission()) {
-            String[] phonenNmber = new String[10];
-            String[] emailAdress = new String[10];
 
+            String[] phonenNmber;
+            String[] emailAdress;
             for (String stringContactId : toDo.getContacts()){
+
 
 
                 Bitmap photo;
@@ -139,8 +168,9 @@ public class Contactmanager {
 
                     //phonenNmber=new String[phoneCursor]
                     int count = 0;
+                    phonenNmber = new String[phoneCursor.getCount()];
+                     emailAdress = new String[EmailCursor.getCount()];
                     while (phoneCursor.moveToNext()) {
-                        phoneNumber = phoneCursor.getString(idxPhone);
                         phonenNmber[count] = phoneCursor.getString(idxPhone);
                         name = phoneCursor.getString(idxName);
                         retval = retval + "\n" + name + "(" + stringContactId + ")";
@@ -148,7 +178,6 @@ public class Contactmanager {
                     }
                     count = 0;
                     while (EmailCursor.moveToNext()) {
-                        email = EmailCursor.getString(idxEmail);
                         emailAdress[count] = EmailCursor.getString(idxEmail);
                         count++;
                     }
@@ -157,6 +186,7 @@ public class Contactmanager {
                     photo = openPhoto(Long.parseLong(stringContactId));
                 } finally {
                     phoneCursor.close();
+                    EmailCursor.close();
                 }
 
                 toDo.addToDoContact(new ToDoContact(stringContactId, name, phonenNmber, emailAdress, photo));

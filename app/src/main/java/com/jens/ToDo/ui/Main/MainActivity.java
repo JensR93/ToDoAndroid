@@ -21,7 +21,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
@@ -40,8 +39,9 @@ import com.jens.ToDo.model.tasks.CheckRemoteAvailableTask;
 import com.jens.ToDo.model.tasks.DeleteAllItemTask;
 import com.jens.ToDo.model.tasks.ReadAllItemsTask;
 import com.jens.ToDo.model.tasks.ReadItemTask;
+import com.jens.ToDo.model.tasks.SyncAllWithLocalItemTask;
+import com.jens.ToDo.model.tasks.SyncAllWithRemoteItemTask;
 import com.jens.ToDo.model.tasks.UpdateItemTask;
-import com.jens.ToDo.ui.DetailView.ContactListItem;
 import com.jens.ToDo.ui.DetailView.Contactmanager;
 import com.jens.ToDo.ui.DetailView.DetailViewActivity;
 
@@ -155,6 +155,12 @@ public class MainActivity extends AppCompatActivity {
             showSortPopup();
             return true;
         }
+        if(item.getItemId()==R.id.SyncwithLocalItems){
+            syncToDoWithLocal();
+        }
+        if(item.getItemId()==R.id.SyncwithRemoteItems){
+            syncToDoWithRemote();
+        }
         if(item.getItemId()==R.id.DeleteAll){
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -194,7 +200,35 @@ public class MainActivity extends AppCompatActivity {
             //finish();
         });
     }
+    private void syncToDoWithLocal() {
 
+        new SyncAllWithLocalItemTask(crudOperations).run(success -> {
+
+            if(success){
+                Toast.makeText(MainActivity.this, R.string.taskSyncSuccess,Toast.LENGTH_SHORT).show();
+            }
+            else{
+                Toast.makeText(MainActivity.this, R.string.taskSyncFail,Toast.LENGTH_SHORT).show();
+            }
+            //setContentView(R.layout.activity_main);
+            //finish();
+        });
+    }
+    private void syncToDoWithRemote() {
+
+        new SyncAllWithRemoteItemTask(crudOperations).run(MainActivity.this, success -> {
+
+            if(success){
+                Toast.makeText(MainActivity.this, R.string.taskSyncSuccess,Toast.LENGTH_SHORT).show();
+
+            }
+            else{
+                Toast.makeText(MainActivity.this, R.string.taskSyncFail,Toast.LENGTH_SHORT).show();
+            }
+            //setContentView(R.layout.activity_main);
+            //finish();
+        });
+    }
     private void showColoumnPopup() {
 
         myDialog.setContentView(R.layout.activity_main_coloumn_popup);
@@ -521,11 +555,11 @@ return  a;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    private void readDatabase() {
+    public void readDatabase() {
 
         new ReadAllItemsTask(this.crudOperations, progressBar).run(ToDos -> {
             dbItemList = ToDos;
-
+            listViewAdapter.clear();
             listViewAdapter.addAll(ToDos);
             updateSort();
 

@@ -33,9 +33,6 @@ public class ToDo implements Serializable {
 
     @Ignore
     private transient List<ToDoContact> toDoContactList = new ArrayList<ToDoContact>();
-    public ToDo(){
-
-    }
 
     public Long getId() {
         return id;

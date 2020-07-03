@@ -10,6 +10,7 @@ import android.util.Log;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.User;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
+import com.jens.ToDo.ui.Main.MainActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -165,6 +166,18 @@ public class SQLiteToDoCRUDOperationsImpl  implements IToDoCRUDOperations {
         Log.i(logger, "deleteToDo(): deletion in db done");
         return false;
     }
+
+    @Override
+    public boolean syncAllItemsWithLocal() {
+        return false;
+    }
+
+    @Override
+    public boolean syncAllItemsWithRemote(MainActivity activity) {
+        return false;
+    }
+
+
 
     @Override
     public Call<Boolean> authenticateUser(User user) {

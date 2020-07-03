@@ -50,4 +50,7 @@
     <string name="login_failed">"Login failed"</string>
     <string name="StandardLogin">Standard Login</string>
     <string name="chooseColoumnsStart">Choose coloumns</string>
+    <string name="email"><![CDATA[<u>Email:</u>]]></string>
+    <string name="taskSyncSuccess">Sync successfull</string>
+    <string name="taskSyncFail">Sync failed</string>
 </resources>

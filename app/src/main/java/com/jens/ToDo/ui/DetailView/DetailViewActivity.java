@@ -11,6 +11,7 @@ import androidx.appcompat.widget.AppCompatCheckBox;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,11 +23,13 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -50,7 +53,6 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
-import java.util.List;
 
 public class DetailViewActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -71,8 +73,9 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
     private ToDo selectedItem;
     private MenuItem saveMenuItem, deleteMenuItem;
+    private Dialog myDialog;
 
-    private Contactmanager cccc;
+    private Contactmanager contactmanager;
     private ContactListItem contactListItem;
     int mYear, mMonth, mDay, mHour, mMinute;
 
@@ -94,7 +97,8 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        cccc = new Contactmanager(this);
+        myDialog=new Dialog(this);
+        contactmanager = new Contactmanager(this);
         setContentView(R.layout.activity_detail_view);
 
         findElements();
@@ -195,7 +199,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         if (requestCode == CALL_CONTACT_PICK && resultCode == Activity.RESULT_OK) {
             Log.i(getClass().getSimpleName(), "got intent from contact picker" + data);
 
-            selectedItem = cccc.showAddContactDetails(data.getData(), selectedItem);
+            selectedItem = contactmanager.showAddContactDetails(data.getData(), selectedItem);
             textImportContacts.setText(selectedItem.getContactStringMultiLine());
             //textImportContacts.setText(ccc.showAddContactDetails(data.getData(),selectedItem));
         }
@@ -270,7 +274,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                     //dataItem = cccc.readContactFromDataItem(dataItem);
 
                     //selectedItem.readContactFromDataItem(cccc);
-                    cccc.readContactFromDataItem(selectedItem);
+                    contactmanager.readContactFromDataItem(selectedItem);
                     textImportContacts.setText(dataItem.getContactStringMultiLine());
                     if (dataItem.getExpiry() != null) {
 
@@ -473,6 +477,73 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                 }
             }
         }
+    }
+    public void showContactPopup(ToDoContact toDoContact) {
+        myDialog.setContentView(R.layout.activity_detail_contacts_popup);
+        TextView contactName = myDialog.findViewById(R.id.contactName);
+        ListView listViewEmail = myDialog.findViewById(R.id.listviewEmail);
+        ListView listViewTel = myDialog.findViewById(R.id.listviewTel);
+
+
+
+
+        ArrayAdapter<String> arrayAdapterTel = new ArrayAdapter<String>(DetailViewActivity.this,R.layout.activity_detail_telefon){
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View itemView = convertView;
+
+                itemView = DetailViewActivity.this.getLayoutInflater().inflate(R.layout.activity_detail_telefon, null);
+                TextView tel = itemView.findViewById(R.id.textTelefon);
+                ImageButton imageButtonSMS= itemView.findViewById(R.id.imageButtonSMS);
+                ImageButton imageButtonCall= itemView.findViewById(R.id.imageButtonCall);
+                String number = toDoContact.getPhoneNo()[position];
+                tel.setText(number);
+
+                imageButtonSMS.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        contactmanager.sendSMS(toDoContact.getPhoneNo()[position],"Hello");
+                    }
+                });
+                imageButtonCall.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        contactmanager.startCall(toDoContact.getPhoneNo()[position]);
+                    }
+                });
+                return itemView;
+            }
+
+        };
+        ArrayAdapter<String> arrayAdapterEmail = new ArrayAdapter<String>(DetailViewActivity.this,R.layout.activity_detail_email){
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View itemView = convertView;
+
+                itemView = DetailViewActivity.this.getLayoutInflater().inflate(R.layout.activity_detail_email, null);
+                TextView email = itemView.findViewById(R.id.textEmail);
+                ImageButton imageButtonEMail= itemView.findViewById(R.id.imageButtonEmail);
+                String adress = toDoContact.getEmailAdress()[position];
+                email.setText(adress);
+                imageButtonEMail.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        contactmanager.sendEmail(toDoContact.getEmailAdress()[position],"Hello","TestEmail");
+                    }
+                });
+
+                return itemView;
+            }
+
+        };
+        arrayAdapterTel.addAll(toDoContact.getPhoneNo());
+        arrayAdapterEmail.addAll(toDoContact.getEmailAdress());
+        listViewTel.setAdapter(arrayAdapterTel);
+        listViewEmail.setAdapter(arrayAdapterEmail);
+        contactName.setText(toDoContact.getName());
+        myDialog.show();
     }
 
 

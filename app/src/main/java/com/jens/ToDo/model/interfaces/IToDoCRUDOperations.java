@@ -2,6 +2,7 @@ package com.jens.ToDo.model.interfaces;
 
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.User;
+import com.jens.ToDo.ui.Main.MainActivity;
 
 import java.util.List;
 
@@ -14,5 +15,7 @@ public interface IToDoCRUDOperations {
     public boolean updateItem(ToDo item);
     public boolean deleteItem(long id);
     public boolean deleteAllItems();
+    public boolean syncAllItemsWithLocal();
+    public boolean syncAllItemsWithRemote(MainActivity activity);
     public Call<Boolean> authenticateUser(User user);
 }

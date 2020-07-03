@@ -76,12 +76,18 @@ public class ContactListItem {
 
                     }
                 });
+                itemNameView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Activity.showContactPopup(selectedListItem.get(position));
+                    }
+                });
 
                 buttonEmail.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-                        emailIntent.setData(Uri.parse("mailto:"+selectedListItem.get(position).getEmailAdress()));
+                        emailIntent.setData(Uri.parse("mailto:"+selectedListItem.get(position).getEmailAdress()[0]));
                         emailIntent.putExtra(Intent.EXTRA_SUBJECT, selectedToDoItem.getName());
                         emailIntent.putExtra(Intent.EXTRA_TEXT, selectedToDoItem.getDescription());
                         Activity.startActivity(Intent.createChooser(emailIntent, "Choose an Email client :"));
@@ -92,7 +98,7 @@ public class ContactListItem {
                     public void onClick(View v) {
                         Intent smsIntent = new Intent(Intent.ACTION_SENDTO);
                         smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        smsIntent.setData(Uri.parse("smsto:" + selectedListItem.get(position).getPhoneNo())); // This ensures only SMS apps respond
+                        smsIntent.setData(Uri.parse("smsto:" + selectedListItem.get(position).getPhoneNo()[0])); // This ensures only SMS apps respond
                         smsIntent.putExtra("sms_body", selectedToDoItem.getDescription());
                         Activity.startActivity(smsIntent);
                     }

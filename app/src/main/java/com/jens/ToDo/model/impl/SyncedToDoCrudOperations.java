@@ -3,7 +3,11 @@ package com.jens.ToDo.model.impl;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.User;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
+import com.jens.ToDo.model.tasks.CreateItemTask;
+import com.jens.ToDo.model.tasks.DeleteAllItemTask;
+import com.jens.ToDo.ui.Main.MainActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -65,7 +69,57 @@ public class SyncedToDoCrudOperations implements IToDoCRUDOperations {
     }
 
     @Override
+    public boolean syncAllItemsWithLocal() {
+        if( remoteCrud.deleteAllItems()){
+            List<ToDo> toDoList = localCrud.readAllItems();
+            for ( ToDo todo : toDoList)
+            {
+                remoteCrud.createItem(todo);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean syncAllItemsWithRemote(MainActivity activity) {
+        List<ToDo> toDoList = remoteCrud.readAllItems();
+        new DeleteAllItemTask(localCrud).run(success -> {
+
+            if(success){
+
+                for ( ToDo todo : toDoList)
+                {
+                    if(todo.getContacts()==null){
+                        todo.setContacts(new ArrayList<String >());
+                    }
+                    new CreateItemTask(localCrud).run(todo, todonew -> {
+
+                        if(todonew!=null){
+
+                            activity.readDatabase();
+
+
+                        }
+                        else{
+
+                        }
+                    });
+                }
+
+            }
+            else{
+
+            }
+        });
+
+
+        return true;
+    }
+
+    @Override
     public Call<Boolean> authenticateUser(User user) {
-        return remoteCrud.authenticateUser(user);
+        Call<Boolean>  b = remoteCrud.authenticateUser(user);
+        return b;
     }
 }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView
+
+        android:textSize="24dp"
+        android:textStyle="bold"
+        android:layout_gravity="center|center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/contactName"></TextView>
+    <TextView
+        android:paddingLeft="10dp"
+        android:textSize="16dp"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Telefon:"></TextView>
+    <ListView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/listviewTel"></ListView>
+    <TextView
+        android:paddingLeft="10dp"
+        android:textSize="16dp"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="E-Mail"></TextView>
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/listviewEmail"></ListView>
+</LinearLayout>
