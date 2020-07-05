@@ -15,6 +15,15 @@ import retrofit2.Call;
 public class SyncedToDoCrudOperations implements IToDoCRUDOperations {
     private IToDoCRUDOperations localCrud;
     private  IToDoCRUDOperations remoteCrud;
+
+    public IToDoCRUDOperations getLocalCrud() {
+        return localCrud;
+    }
+
+    public IToDoCRUDOperations getRemoteCrud() {
+        return remoteCrud;
+    }
+
     public SyncedToDoCrudOperations(IToDoCRUDOperations localCrud, IToDoCRUDOperations remoteCrud) {
         this.localCrud = localCrud;
         this.remoteCrud = remoteCrud;
@@ -93,34 +102,34 @@ public class SyncedToDoCrudOperations implements IToDoCRUDOperations {
         return false;
     }
 
-    @Override
-    public boolean syncAllItemsWithRemote(MainActivity activity) {
-        List<ToDo> toDoList = remoteCrud.readAllItems();
-        new DeleteAllItemTask(localCrud).run(success -> {
-
-            if(success){
-
-                for ( ToDo todo : toDoList)
-                {
-                    if(todo.getContacts()==null){
-                        todo.setContacts(new ArrayList<String >());
-                    }
-                    new CreateItemTask(localCrud).run(todo, todonew -> {
-
-                    });
-
-                }
-                activity.readDatabase(false);
-
-            }
-            else{
-
-            }
-        });
-
-
-        return true;
-    }
+//    @Override
+//    public boolean syncAllItemsWithRemote() {
+//        List<ToDo> toDoList = remoteCrud.readAllItems();
+//        final boolean[] retVal = {false};
+//        new DeleteAllItemTask(localCrud).run(success -> {
+//
+//            if(success){
+//                retVal[0] = success;
+//                for ( ToDo todo : toDoList)
+//                {
+//                    if(todo.getContacts()==null){
+//                        todo.setContacts(new ArrayList<String >());
+//                    }
+//                    new CreateItemTask(localCrud).run(todo, todonew -> {
+//
+//                    });
+//
+//                }
+//
+//            }
+//            else{
+//
+//            }
+//        });
+//
+//
+//        return retVal[0];
+//    }
 
     @Override
     public Call<Boolean> authenticateUser(User user) {

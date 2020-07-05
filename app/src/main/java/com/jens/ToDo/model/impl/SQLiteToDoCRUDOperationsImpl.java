@@ -172,10 +172,6 @@ public class SQLiteToDoCRUDOperationsImpl  implements IToDoCRUDOperations {
         return false;
     }
 
-    @Override
-    public boolean syncAllItemsWithRemote(MainActivity activity) {
-        return false;
-    }
 
 
 

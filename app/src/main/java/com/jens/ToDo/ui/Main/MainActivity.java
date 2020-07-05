@@ -41,15 +41,15 @@ import com.jens.ToDo.model.ToDoContact;
 import com.jens.ToDo.model.impl.SyncedToDoCrudOperations;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.tasks.CheckRemoteAvailableTask;
+import com.jens.ToDo.model.tasks.CreateItemTask;
 import com.jens.ToDo.model.tasks.DeleteAllItemTask;
 import com.jens.ToDo.model.tasks.DeleteAllLocalItemTask;
 import com.jens.ToDo.model.tasks.DeleteAllRemoteItemTask;
 import com.jens.ToDo.model.tasks.ReadAllItemsTask;
 import com.jens.ToDo.model.tasks.ReadItemTask;
 import com.jens.ToDo.model.tasks.SyncAllWithLocalItemTask;
-import com.jens.ToDo.model.tasks.SyncAllWithRemoteItemTask;
 import com.jens.ToDo.model.tasks.UpdateItemTask;
-import com.jens.ToDo.ui.DetailView.Contactmanager;
+import com.jens.ToDo.ui.DetailView.ContactManager;
 import com.jens.ToDo.ui.DetailView.DetailViewActivity;
 
 import java.time.Instant;
@@ -64,7 +64,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     boolean isConnected=false;
-    private Contactmanager contactmanager;
+    private ContactManager contactmanager;
     Dialog myDialog;
     Settings mySettings;
     ListView listView;
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     //endregion
     
     private boolean favouriteSort = true;
-    private Contactmanager ccc;
+    private ContactManager ccc;
     
     //region Variable
 
@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewItemList=new ArrayList<View>();
-        contactmanager=new Contactmanager(MainActivity.this);
+        contactmanager=new ContactManager(MainActivity.this);
         mySettings=new Settings(true,true,true,true,true);
 
         setContentView(R.layout.activity_main);
@@ -305,12 +305,37 @@ public class MainActivity extends AppCompatActivity {
     }
     private void syncToDoWithRemote() {
 
-        new SyncAllWithRemoteItemTask(crudOperations).run(MainActivity.this, success -> {
+        SyncedToDoCrudOperations syncedToDoCrudOperations = (SyncedToDoCrudOperations) crudOperations;
+        new DeleteAllLocalItemTask(syncedToDoCrudOperations).run(success ->{
+            if(success){
+                new ReadAllItemsTask(syncedToDoCrudOperations.getRemoteCrud(), progressBar).run(ToDos -> {
+                    dbItemList = ToDos;
+                    for ( ToDo todo : dbItemList)
+                    {
+                        if(todo.getContacts()==null){
+                            todo.setContacts(new ArrayList<String >());
+                        }
+                        new CreateItemTask(syncedToDoCrudOperations.getLocalCrud()).run(todo, todonew -> {
+                            if(dbItemList.size()>0){
+                                listViewAdapter.clear();
+                                listViewAdapter.addAll(ToDos);
+                                updateSort();
+                                String message ="";}
+                        });
+
+                    }
+
+
+                });
+            }
+        });
+
+/*        new SyncAllWithRemoteItemTask(crudOperations).run(success -> {
 
             if(success){
 
                 setMessageText("Sync local connection with remote successfull",2000,6);
-
+                readDatabase(false);
             }
             else{
 
@@ -319,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
             }
             //setContentView(R.layout.activity_main);
             //finish();
-        });
+        });*/
     }
     private void showColoumnPopup() {
 
@@ -761,22 +786,20 @@ return  a;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public void readDatabase(boolean sync) {
+    private void readDatabase(boolean sync) {
 
         new ReadAllItemsTask(this.crudOperations, progressBar).run(ToDos -> {
             dbItemList = ToDos;
+            if(dbItemList.size()>0){
             listViewAdapter.clear();
             listViewAdapter.addAll(ToDos);
             updateSort();
-            String message ="";
+            String message ="";}
             if(sync){
                // message="Remote Connection successfull";
                 startSync();
             }
-            else{
-                message="Remote Connection failed";
-                setMessageText(message,0,10);
-            }
+
 
 
         });

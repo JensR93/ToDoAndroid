@@ -30,11 +30,11 @@ public class ContactListItem {
     private Activity Activity;
     private ToDo selectedToDoItem;
     private List<View> itemViewList;
-    private Contactmanager contactmanager;
+    private ContactManager contactmanager;
     private ListView listView;
 
-    
-    public ContactListItem(Activity Activity, ToDo selectedItem, Contactmanager contactmanager, ListView listView) {
+
+    public ContactListItem(Activity Activity, ToDo selectedItem, ContactManager contactmanager, ListView listView) {
         try {
             this.Activity = Activity;
             this.selectedToDoItem =selectedItem;

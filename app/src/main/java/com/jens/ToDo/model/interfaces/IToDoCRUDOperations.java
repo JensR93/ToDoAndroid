@@ -16,6 +16,5 @@ public interface IToDoCRUDOperations {
     public boolean deleteItem(long id);
     public boolean deleteAllItems();
     public boolean syncAllItemsWithLocal();
-    public boolean syncAllItemsWithRemote(MainActivity activity);
     public Call<Boolean> authenticateUser(User user);
 }

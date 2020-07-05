@@ -112,10 +112,6 @@ public class RetroFitToDoRUDOperationsImpl implements IToDoCRUDOperations {
         return false;
     }
 
-    @Override
-    public boolean syncAllItemsWithRemote(MainActivity activity) {
-        return false;
-    }
 
 
 

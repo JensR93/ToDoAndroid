@@ -78,10 +78,7 @@ public class RoomToDoCRUDOperationsImpl implements IToDoCRUDOperations {
     public boolean syncAllItemsWithLocal() {
         return false;
     }
-    @Override
-    public boolean syncAllItemsWithRemote(MainActivity activity) {
-        return false;
-    }
+
 
     @Override
     public Call<Boolean> authenticateUser(User user) {
