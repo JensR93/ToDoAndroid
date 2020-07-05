@@ -78,7 +78,6 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
 
     private Contactmanager contactmanager;
-    private ContactListItem contactListItem;
     //int mYear, mMonth, mDay, mHour, mMinute;
 
     //endregion
@@ -121,7 +120,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
             loadToDoObject(itemId);
         } else {
             selectedItem = new ToDo();
-            contactListItem = new ContactListItem(DetailViewActivity.this, selectedItem,contactmanager);
+            //new ContactListItem(DetailViewActivity.this, selectedItem,contactmanager);
         }
 
 
@@ -217,7 +216,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
             selectedItem = contactmanager.showAddContactDetails(data.getData(), selectedItem);
             textImportContacts.setText(selectedItem.getContactStringMultiLine());
-            contactListItem.createContactList();
+            //contactListItem.createContactList();
             //textImportContacts.setText(ccc.showAddContactDetails(data.getData(),selectedItem));
         }
     }
@@ -314,8 +313,8 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                     }
 
                     //Contactlistitem
-                    contactListItem = new ContactListItem(DetailViewActivity.this, selectedItem,contactmanager);
-                    contactListItem.createContactList();
+                    new ContactListItem(DetailViewActivity.this, selectedItem,contactmanager,findViewById(R.id.listView2));
+
                     linearLayoutDetail.setEnabled(true);
                 }
             }

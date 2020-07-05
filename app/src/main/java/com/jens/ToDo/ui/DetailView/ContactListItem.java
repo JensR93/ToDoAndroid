@@ -23,22 +23,26 @@ import com.jens.ToDo.model.ToDoContact;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
 public class ContactListItem {
 
-
-
-    private ArrayAdapter<ToDoContact> listViewAdapter;
-    private DetailViewActivity Activity;
+    private Activity Activity;
     private ToDo selectedToDoItem;
     private List<View> itemViewList;
     private Contactmanager contactmanager;
+    private ListView listView;
 
-    public ContactListItem(DetailViewActivity Activity, ToDo selectedItem, Contactmanager contactmanager) {
+    
+    public ContactListItem(Activity Activity, ToDo selectedItem, Contactmanager contactmanager, ListView listView) {
         try {
             this.Activity = Activity;
             this.selectedToDoItem =selectedItem;
             itemViewList=new ArrayList<>();
             this.contactmanager=contactmanager;
+
+            this.listView=listView;
+            createContactList();
         }
         catch (Exception e){
             int a=0;
@@ -46,13 +50,31 @@ public class ContactListItem {
     }
 
 
+    /**
+     * Creates the listViewAdapter
+     * Add the contactList from the ToDo-Element to the listViewAdapter
+     * Set the listViewAdapter to the listView
+     */
+    private void createContactList() {
+        ArrayAdapter<ToDoContact> listViewAdapter = createListViewAdapter(selectedToDoItem.getToDoContactList());
+        listViewAdapter.addAll(selectedToDoItem.getToDoContactList());
+        listView.setAdapter(listViewAdapter);
+    }
 
-    public ArrayAdapter<ToDoContact> createListViewAdapter(List<ToDoContact> selectedListItem) {
+    /**
+     * Create the ListviewAdapter that will be set on the Listview
+     * The View contains the listener for the showContact-button, the email and sms button
+     * The buttons always use the first adress / first number for the intent
+     * Buttons will be disabled if there is no number / adress for the contact
+     * @param selectedListItem
+     * @return
+     */
+    private ArrayAdapter<ToDoContact> createListViewAdapter(List<ToDoContact> selectedListItem) {
         return new ArrayAdapter<ToDoContact>(Activity, R.layout.activity_detail_contact_listitem) {
             @NonNull
             @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View itemView = convertView;
+            public View getView(int position, @Nullable View itemView, @NonNull ViewGroup parent) {
+
                 TextView itemNameView;
                 itemView = Activity.getLayoutInflater().inflate(R.layout.activity_detail_contact_listitem, null);
                 itemViewList.add(itemView);
@@ -65,50 +87,30 @@ public class ContactListItem {
                     imageView.setImageBitmap(selectedListItem.get(position).getPhoto());
                 }
 
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int a=0;
-                        View parent = (View) v.getParent();
+                itemView.setOnClickListener(v ->showContactPopup(selectedListItem.get(position)));
 
-                    }
-                });
-                itemNameView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        showContactPopup(selectedListItem.get(position));
-                    }
-                });
+                itemNameView.setOnClickListener(v -> showContactPopup(selectedListItem.get(position)));
 
-                buttonEmail.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-                        emailIntent.setData(Uri.parse("mailto:"+selectedListItem.get(position).getEmailAdress()[0]));
-                        emailIntent.putExtra(Intent.EXTRA_SUBJECT, selectedToDoItem.getName());
-                        emailIntent.putExtra(Intent.EXTRA_TEXT, selectedToDoItem.getDescription());
-                        Activity.startActivity(Intent.createChooser(emailIntent, "Choose an Email client :"));
-                    }
+                buttonEmail.setOnClickListener(v -> {
+                    Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                    emailIntent.setData(Uri.parse("mailto:"+selectedListItem.get(position).getEmailAdress()[0]));
+                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, selectedToDoItem.getName());
+                    emailIntent.putExtra(Intent.EXTRA_TEXT, selectedToDoItem.getDescription());
+                    Activity.startActivity(Intent.createChooser(emailIntent, "Choose an Email client :"));
                 });
-                buttonSMS.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent smsIntent = new Intent(Intent.ACTION_SENDTO);
-                        smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        smsIntent.setData(Uri.parse("smsto:" + selectedListItem.get(position).getPhoneNo()[0])); // This ensures only SMS apps respond
-                        smsIntent.putExtra("sms_body", selectedToDoItem.getDescription());
-                        Activity.startActivity(smsIntent);
-                    }
+                buttonSMS.setOnClickListener(v -> {
+                    Intent smsIntent = new Intent(Intent.ACTION_SENDTO);
+                    smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    smsIntent.setData(Uri.parse("smsto:" + selectedListItem.get(position).getPhoneNo()[0])); // This ensures only SMS apps respond
+                    smsIntent.putExtra("sms_body", selectedToDoItem.getDescription());
+                    Activity.startActivity(smsIntent);
                 });
-                buttonDelete.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        ToDoContact toDoContact = selectedListItem.get(position);
-                        if(selectedListItem!=null||selectedToDoItem!=null){
-                        selectedToDoItem.removeToDoContact(toDoContact);
-                        createContactList();
-                        removeViewFromList(v);
-                        }
+                buttonDelete.setOnClickListener(v -> {
+                    ToDoContact toDoContact = selectedListItem.get(position);
+                    if(selectedListItem!=null||selectedToDoItem!=null){
+                    selectedToDoItem.removeToDoContact(toDoContact);
+                    createContactList();
+                    removeViewFromList(v);
                     }
                 });
 
@@ -127,19 +129,24 @@ public class ContactListItem {
 
     }
 
-    private void removeViewFromList(View v) {
+    /**
+     * Removes the selected contact from the itemViewList
+     * @param clieckedViewItem
+     */
+    private void removeViewFromList(View clieckedViewItem) {
         boolean check = false;
-        for (View view : itemViewList){
-            if(!check&&v==view){
-                check=true;
-            }
-        }
-        if(check){
-            itemViewList.remove(v);
-
-        }
+        for (View view : itemViewList)if(!check&&clieckedViewItem==view)check=true;
+        if(check)itemViewList.remove(clieckedViewItem);
     }
-    //region Contacts
+
+
+    /**
+     * Show a seperat Popup for the contact
+     * The popup contains all phone numbers and emails
+     * Buttons for call, message for each number
+     * Buttons for email to each adress
+     * @param toDoContact
+     */
     private void showContactPopup(ToDoContact toDoContact) {
         Dialog myDialog=new Dialog(Activity);
         myDialog.setContentView(R.layout.activity_detail_contacts_popup);
@@ -147,15 +154,10 @@ public class ContactListItem {
         ListView listViewEmail = myDialog.findViewById(R.id.listviewEmail);
         ListView listViewTel = myDialog.findViewById(R.id.listviewTel);
 
-
-
-
         ArrayAdapter<String> arrayAdapterTel = new ArrayAdapter<String>(Activity,R.layout.activity_detail_telefon){
             @NonNull
             @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View itemView = convertView;
-
+            public View getView(int position, @Nullable View itemView, @NonNull ViewGroup parent) {
                 itemView = Activity.getLayoutInflater().inflate(R.layout.activity_detail_telefon, null);
                 TextView tel = itemView.findViewById(R.id.textTelefon);
                 ImageButton imageButtonSMS= itemView.findViewById(R.id.imageButtonSMS);
@@ -163,18 +165,8 @@ public class ContactListItem {
                 String number = toDoContact.getPhoneNo()[position];
                 tel.setText(number);
 
-                imageButtonSMS.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        contactmanager.sendSMS(toDoContact.getPhoneNo()[position],"Hello");
-                    }
-                });
-                imageButtonCall.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        contactmanager.startCall(toDoContact.getPhoneNo()[position]);
-                    }
-                });
+                imageButtonSMS.setOnClickListener(v -> contactmanager.sendSMS(toDoContact.getPhoneNo()[position],"Hello"));
+                imageButtonCall.setOnClickListener(v -> contactmanager.startCall(toDoContact.getPhoneNo()[position]));
                 return itemView;
             }
 
@@ -182,20 +174,13 @@ public class ContactListItem {
         ArrayAdapter<String> arrayAdapterEmail = new ArrayAdapter<String>(Activity,R.layout.activity_detail_email){
             @NonNull
             @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View itemView = convertView;
-
+            public View getView(int position, @Nullable View itemView, @NonNull ViewGroup parent) {
                 itemView = Activity.getLayoutInflater().inflate(R.layout.activity_detail_email, null);
                 TextView email = itemView.findViewById(R.id.textEmail);
                 ImageButton imageButtonEMail= itemView.findViewById(R.id.imageButtonEmail);
                 String adress = toDoContact.getEmailAdress()[position];
                 email.setText(adress);
-                imageButtonEMail.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        contactmanager.sendEmail(toDoContact.getEmailAdress()[position],"Hello","TestEmail");
-                    }
-                });
+                imageButtonEMail.setOnClickListener(v -> contactmanager.sendEmail(toDoContact.getEmailAdress()[position],"Hello","TestEmail"));
 
                 return itemView;
             }
@@ -208,13 +193,7 @@ public class ContactListItem {
         contactName.setText(toDoContact.getName());
         myDialog.show();
     }
-    public void createContactList() {
-        ArrayAdapter<ToDoContact> listViewAdapter = createListViewAdapter(selectedToDoItem.getToDoContactList());
 
-        listViewAdapter.addAll(selectedToDoItem.getToDoContactList());
-        ListView listView = Activity.findViewById(R.id.listView2);
-        listView.setAdapter(listViewAdapter);
-    }
-    //endregion
+
 
 }
