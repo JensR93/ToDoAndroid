@@ -11,7 +11,6 @@ import androidx.appcompat.widget.AppCompatCheckBox;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -23,15 +22,11 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -42,7 +37,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.jens.ToDo.R;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoApplication;
-import com.jens.ToDo.model.ToDoContact;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.tasks.DeleteItemTask;
 import com.jens.ToDo.model.tasks.UpdateItemTask;
@@ -57,32 +51,24 @@ import java.util.Calendar;
 
 public class DetailViewActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private IToDoCRUDOperations crudOperations;
+    private ToDo selectedItem;
+    private ContactManager contactmanager;
+    private long itemId;
 
-    //region Variable
+    //region UI Elements
     private LinearLayout linearLayoutDetail;
     private FloatingActionButton fab;
-    private TextInputEditText inputName;
-    private TextInputEditText inputDescription;
-    private TextInputEditText inputID;
-    private EditText inputDueDate;
-    private EditText inputDueTime;
+    private TextInputEditText inputName,inputDescription,inputID;
+    private EditText inputDueTime,inputDueDate;
     private TextView textImportContacts;
-    private AppCompatCheckBox checkDone;
-    private AppCompatCheckBox checkFavourite;
+    private AppCompatCheckBox checkDone,checkFavourite;
     private Button buttonImportContacts;
-    private IToDoCRUDOperations crudOperations;
-
-    private ToDo selectedItem;
     private MenuItem saveMenuItem, deleteMenuItem;
-
-
-
-    private Contactmanager contactmanager;
-    //int mYear, mMonth, mDay, mHour, mMinute;
 
     //endregion
 
-    //region Constants
+    //region Constants Variable
     public static final int STATUS_CREATED = 0;
     public static final int STATUS_EDITED = 1;
     public static final int STATUS_DELETED = 2;
@@ -90,18 +76,20 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     public static final int CALL_CONTACT_PICK = 10;
     public static final String ARG_ITEM_ID = "itemID";
     public static final String LOGGING_TAG = DetailViewActivity.class.getSimpleName();
-    //endregion
-    long itemId;
 
+    //endregion
 
     //region Override Methods
 
-    //wird beim ersten Start aufgerufen
+    /**
+     * Called on Start:
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        contactmanager = new Contactmanager(this);
+        contactmanager = new ContactManager(this);
         setContentView(R.layout.activity_detail_view);
 
         findElements();
@@ -127,7 +115,10 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
     }
 
-    // Opens UI Elements in Android to pick date and time
+    /**
+     * Opens UI Elements in Android to pick date and time
+     * @param view
+     */
     @Override
     public void onClick(View view) {
         int mYear, mMonth, mDay, mHour, mMinute;
@@ -145,16 +136,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
             }
 
             DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                    new DatePickerDialog.OnDateSetListener() {
-
-                        @Override
-                        public void onDateSet(DatePicker view, int year,
-                                              int monthOfYear, int dayOfMonth) {
-
-                            inputDueDate.setText(String.format("%02d.%02d.%04d", dayOfMonth, monthOfYear + 1, year));
-
-                        }
-                    }, mYear, mMonth, mDay);
+                    (view12, year, monthOfYear, dayOfMonth) -> inputDueDate.setText(String.format("%02d.%02d.%04d", dayOfMonth, monthOfYear + 1, year)), mYear, mMonth, mDay);
             datePickerDialog.show();
         }
         if (view == inputDueTime) {
@@ -172,19 +154,18 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
             }
             // Launch Time Picker Dialog
             TimePickerDialog timePickerDialog = new TimePickerDialog(this,
-                    new TimePickerDialog.OnTimeSetListener() {
-
-                        @Override
-                        public void onTimeSet(TimePicker view, int hourOfDay,
-                                              int minute) {
-
-                            inputDueTime.setText(String.format("%02d:%02d", hourOfDay, minute));
-                        }
-                    }, mHour, mMinute, true);
+                    (view1, hourOfDay, minute) -> inputDueTime.setText(String.format("%02d:%02d", hourOfDay, minute)), mHour, mMinute, true);
             timePickerDialog.show();
         }
     }
 
+    /**
+     * Buttons are enabled / disabled depending on Mode
+     * If Create Mode --> Only Saving
+     * If Edit Mode --> Saving and Deleting
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -208,19 +189,29 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         return true;
     }
 
+    /**
+     * Method is called after a contact is imported
+     * Contact informations are stored in ToDoElement
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CALL_CONTACT_PICK && resultCode == Activity.RESULT_OK) {
             Log.i(getClass().getSimpleName(), "got intent from contact picker" + data);
-
             selectedItem = contactmanager.showAddContactDetails(data.getData(), selectedItem);
             textImportContacts.setText(selectedItem.getContactStringMultiLine());
-            //contactListItem.createContactList();
-            //textImportContacts.setText(ccc.showAddContactDetails(data.getData(),selectedItem));
         }
     }
 
+    /**
+     * Menu with the actions for saving and deleting and ToDoElement
+     * Delete Returns a Dialog which can be aborted
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
@@ -230,19 +221,9 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         }
         if (item.getItemId() == R.id.deleteItem) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Wirklich löschen?");
-            builder.setPositiveButton("Löschen", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    deleteDataItem();
-                }
-            });
-            builder.setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Toast.makeText(DetailViewActivity.this, "Abbuch", Toast.LENGTH_SHORT).show();
-                }
-            });
+            builder.setTitle("Really delete?");
+            builder.setPositiveButton("Delete", (dialog, which) -> deleteDataItem());
+            builder.setNegativeButton("Abort", (dialog, which) -> Toast.makeText(DetailViewActivity.this, "Abort", Toast.LENGTH_SHORT).show());
             builder.create().show();
 
             return true;
@@ -254,8 +235,9 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     //endregion
 
 
-
-
+    /**
+     * Find the UI Elements and set it to the variables
+     */
     private void findElements() {
         inputName = findViewById(R.id.inputName);
         inputDescription = findViewById(R.id.inputDescription);
@@ -269,6 +251,11 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         linearLayoutDetail=findViewById(R.id.linearLayoutDetail);
     }
 
+    /**
+     * Loads the ToDOElement from the database
+     * Fill the UI Elements with the information from the ToDoElement
+     * @param itemId
+     */
     private void loadToDoObject(long itemId) {
 
         new AsyncTask<Long, Void, ToDo>() {
@@ -290,12 +277,6 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                     inputName.setText(dataItem.getName());
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
 
-
-                    // textImportContacts.setText(cccc.readContactFromDataItem(dataItem));
-
-                    //dataItem = cccc.readContactFromDataItem(dataItem);
-
-                    //selectedItem.readContactFromDataItem(cccc);
                     contactmanager.readContactFromDataItem(selectedItem);
                     textImportContacts.setText(dataItem.getContactStringMultiLine());
                     if (dataItem.getExpiry() != null) {
@@ -312,9 +293,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                         inputDueTime.setText(localTime.toString());
                     }
 
-                    //Contactlistitem
                     new ContactListItem(DetailViewActivity.this, selectedItem,contactmanager,findViewById(R.id.listView2));
-
                     linearLayoutDetail.setEnabled(true);
                 }
             }
@@ -322,72 +301,63 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     }
 
 
-
+    /**
+     * Creates a listener for inputName, inputDescription, checkFavourite, checkDone, buttonImportContacts
+     */
     private void CreateListener() {
 
-        inputName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
-                    if (inputName.getText().length() > 0) {
-                        enableSaveButton();
-                    }
+        inputName.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
+                if (inputName.getText().length() > 0) {
+                    enableSaveButton();
                 }
-                return false;
             }
+            return false;
         });
 
-        inputDescription.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
-                    if (inputName.getText().length() > 0) {
-                        enableSaveButton();
-                    }
+        inputDescription.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
+                if (inputName.getText().length() > 0) {
+                    enableSaveButton();
                 }
-                return false;
             }
+            return false;
         });
-        checkFavourite.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
-                    if (inputName.getText().length() > 0) {
-                        enableSaveButton();
-                    }
+        checkFavourite.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
+                if (inputName.getText().length() > 0) {
+                    enableSaveButton();
                 }
-                return false;
             }
+            return false;
         });
-        checkDone.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
-                    if (inputName.getText().length() > 0) {
-                        enableSaveButton();
-                    }
+        checkDone.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
+                if (inputName.getText().length() > 0) {
+                    enableSaveButton();
                 }
-                return false;
             }
+            return false;
         });
-        buttonImportContacts.setOnClickListener(new TextView.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Intent contactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
-                startActivityForResult(contactIntent, CALL_CONTACT_PICK);
-
-            }
+        buttonImportContacts.setOnClickListener(v -> {
+            Intent contactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+            startActivityForResult(contactIntent, CALL_CONTACT_PICK);
         });
-
 
     }
 
+    /**
+     * Enable UI Save Button
+     */
     private void enableSaveButton() {
         saveMenuItem.getIcon().setAlpha(255);
         saveMenuItem.setEnabled(true);
     }
 
+    /**
+     * Delete a ToDoElement
+     * After deleting --> Return to MainActivity with an Intent
+     */
     private void deleteDataItem() {
         Intent returnIntent = new Intent();
         new DeleteItemTask(this.crudOperations).run(selectedItem.getId(), success -> {
@@ -400,6 +370,10 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
     }
 
+    /**
+     * Create or Edit a ToDoElement
+     * Intent: Returns the edited ToDoElement and the ID
+     */
     private void saveDataItem() {
         long itemId = getIntent().getLongExtra(ARG_ITEM_ID, -1);
         Intent returnIntent = new Intent();
@@ -452,8 +426,6 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
             else {
                 if (itemId == -1) {
 
-                    //TODO: CreateItemTask bauen: Parameter mehrere Strings und nicht das Objekt --> ID != 0
-
                     if (selectedItem == null) {
                         selectedItem = new ToDo();
                     }
@@ -488,10 +460,6 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
                     }).start();
                 } else {
-//                setResult(-1, returnIntent);
-//                returnIntent.putExtra("dataitem", selectedItem);
-//                setContentView(R.layout.activity_main);
-//                finish();
                 }
             }
         }
