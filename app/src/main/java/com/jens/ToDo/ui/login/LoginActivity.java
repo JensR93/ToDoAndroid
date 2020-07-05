@@ -36,9 +36,9 @@ public class LoginActivity extends Activity {
         setContentView(R.layout.activity_login);
 
         progressBar=findViewById(R.id.loading);
+        progressBar.setVisibility(View.VISIBLE);
         checkRemoteAvailable();
         findElements();
-        progressBar.setVisibility(View.GONE);
         buttonSignIn.setEnabled(false);
 
         createListener();
@@ -117,6 +117,7 @@ public class LoginActivity extends Activity {
 
     private void  checkRemoteAvailable() {
 
+
         new CheckRemoteAvailableTask().run(available -> {
 
             ((ToDoApplication) getApplication()).setRemoteCRUDMode(available);
@@ -162,7 +163,7 @@ public class LoginActivity extends Activity {
                 @Override
                 public void onResponse(Call<Boolean> call, Response<Boolean> response) {
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

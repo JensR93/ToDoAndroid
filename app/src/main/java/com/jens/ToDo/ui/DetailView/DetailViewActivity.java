@@ -30,6 +30,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -58,7 +59,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
 
     //region Variable
-
+    private LinearLayout linearLayoutDetail;
     private FloatingActionButton fab;
     private TextInputEditText inputName;
     private TextInputEditText inputDescription;
@@ -73,11 +74,12 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
     private ToDo selectedItem;
     private MenuItem saveMenuItem, deleteMenuItem;
-    private Dialog myDialog;
+
+
 
     private Contactmanager contactmanager;
     private ContactListItem contactListItem;
-    int mYear, mMonth, mDay, mHour, mMinute;
+    //int mYear, mMonth, mDay, mHour, mMinute;
 
     //endregion
 
@@ -93,15 +95,18 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     long itemId;
 
 
+    //region Override Methods
+
     //wird beim ersten Start aufgerufen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        myDialog=new Dialog(this);
+
         contactmanager = new Contactmanager(this);
         setContentView(R.layout.activity_detail_view);
 
         findElements();
+        linearLayoutDetail.setEnabled(false);
         crudOperations = ((ToDoApplication) getApplication()).getCRUDOperations();
 
         // Intent von MainActivity speichern
@@ -116,24 +121,29 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
             loadToDoObject(itemId);
         } else {
             selectedItem = new ToDo();
-            contactListItem = new ContactListItem(DetailViewActivity.this, selectedItem);
+            contactListItem = new ContactListItem(DetailViewActivity.this, selectedItem,contactmanager);
         }
 
 
 
     }
 
-
     // Opens UI Elements in Android to pick date and time
     @Override
     public void onClick(View view) {
-
+        int mYear, mMonth, mDay, mHour, mMinute;
         if (view == inputDueDate) {
             final Calendar c = Calendar.getInstance();
             mYear = c.get(Calendar.YEAR);
             mMonth = c.get(Calendar.MONTH);
             mDay = c.get(Calendar.DAY_OF_MONTH);
 
+            if(selectedItem.getExpiry()!=null){
+                mYear=selectedItem.getExpiryYearInt();
+                mMonth=selectedItem.getExpiryMonthInt()-1;
+                mDay=selectedItem.getExpiryDayInt();
+
+            }
 
             DatePickerDialog datePickerDialog = new DatePickerDialog(this,
                     new DatePickerDialog.OnDateSetListener() {
@@ -155,6 +165,12 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
             mHour = c.get(Calendar.HOUR_OF_DAY);
             mMinute = c.get(Calendar.MINUTE);
 
+
+            if(selectedItem.getExpiry()!=null){
+                mHour=selectedItem.getExpiryHourInt();
+                mMinute=selectedItem.getExpiryMinuteInt();
+
+            }
             // Launch Time Picker Dialog
             TimePickerDialog timePickerDialog = new TimePickerDialog(this,
                     new TimePickerDialog.OnTimeSetListener() {
@@ -201,6 +217,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
 
             selectedItem = contactmanager.showAddContactDetails(data.getData(), selectedItem);
             textImportContacts.setText(selectedItem.getContactStringMultiLine());
+            contactListItem.createContactList();
             //textImportContacts.setText(ccc.showAddContactDetails(data.getData(),selectedItem));
         }
     }
@@ -235,6 +252,11 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
+    //endregion
+
+
+
+
     private void findElements() {
         inputName = findViewById(R.id.inputName);
         inputDescription = findViewById(R.id.inputDescription);
@@ -245,6 +267,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         checkFavourite = findViewById(R.id.inputFavourite);
         textImportContacts = findViewById(R.id.textImportContacts);
         buttonImportContacts=findViewById(R.id.buttonImportContacts);
+        linearLayoutDetail=findViewById(R.id.linearLayoutDetail);
     }
 
     private void loadToDoObject(long itemId) {
@@ -291,19 +314,15 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                     }
 
                     //Contactlistitem
-                    contactListItem = new ContactListItem(DetailViewActivity.this, selectedItem);
-                    createContactList();
+                    contactListItem = new ContactListItem(DetailViewActivity.this, selectedItem,contactmanager);
+                    contactListItem.createContactList();
+                    linearLayoutDetail.setEnabled(true);
                 }
             }
         }.execute(itemId);
     }
 
-    public void createContactList() {
-        ArrayAdapter<ToDoContact> listViewAdapter = contactListItem.createListViewAdapter(selectedItem.getToDoContactList());
-        listViewAdapter.addAll(selectedItem.getToDoContactList());
-        ListView listView = DetailViewActivity.this.findViewById(R.id.listView2);
-        listView.setAdapter(listViewAdapter);
-    }
+
 
     private void CreateListener() {
 
@@ -478,73 +497,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
             }
         }
     }
-    public void showContactPopup(ToDoContact toDoContact) {
-        myDialog.setContentView(R.layout.activity_detail_contacts_popup);
-        TextView contactName = myDialog.findViewById(R.id.contactName);
-        ListView listViewEmail = myDialog.findViewById(R.id.listviewEmail);
-        ListView listViewTel = myDialog.findViewById(R.id.listviewTel);
 
-
-
-
-        ArrayAdapter<String> arrayAdapterTel = new ArrayAdapter<String>(DetailViewActivity.this,R.layout.activity_detail_telefon){
-            @NonNull
-            @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View itemView = convertView;
-
-                itemView = DetailViewActivity.this.getLayoutInflater().inflate(R.layout.activity_detail_telefon, null);
-                TextView tel = itemView.findViewById(R.id.textTelefon);
-                ImageButton imageButtonSMS= itemView.findViewById(R.id.imageButtonSMS);
-                ImageButton imageButtonCall= itemView.findViewById(R.id.imageButtonCall);
-                String number = toDoContact.getPhoneNo()[position];
-                tel.setText(number);
-
-                imageButtonSMS.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        contactmanager.sendSMS(toDoContact.getPhoneNo()[position],"Hello");
-                    }
-                });
-                imageButtonCall.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        contactmanager.startCall(toDoContact.getPhoneNo()[position]);
-                    }
-                });
-                return itemView;
-            }
-
-        };
-        ArrayAdapter<String> arrayAdapterEmail = new ArrayAdapter<String>(DetailViewActivity.this,R.layout.activity_detail_email){
-            @NonNull
-            @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View itemView = convertView;
-
-                itemView = DetailViewActivity.this.getLayoutInflater().inflate(R.layout.activity_detail_email, null);
-                TextView email = itemView.findViewById(R.id.textEmail);
-                ImageButton imageButtonEMail= itemView.findViewById(R.id.imageButtonEmail);
-                String adress = toDoContact.getEmailAdress()[position];
-                email.setText(adress);
-                imageButtonEMail.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        contactmanager.sendEmail(toDoContact.getEmailAdress()[position],"Hello","TestEmail");
-                    }
-                });
-
-                return itemView;
-            }
-
-        };
-        arrayAdapterTel.addAll(toDoContact.getPhoneNo());
-        arrayAdapterEmail.addAll(toDoContact.getEmailAdress());
-        listViewTel.setAdapter(arrayAdapterTel);
-        listViewEmail.setAdapter(arrayAdapterEmail);
-        contactName.setText(toDoContact.getName());
-        myDialog.show();
-    }
 
 
 }

@@ -68,6 +68,18 @@ public class SyncedToDoCrudOperations implements IToDoCRUDOperations {
         return false;
     }
 
+    public boolean deleteAllLocalItems() {
+        if(localCrud.deleteAllItems()){
+            return  true;
+        }
+        return false;
+    }
+    public boolean deleteAllRemoteItems() {
+        if(remoteCrud.deleteAllItems()){
+            return  true;
+        }
+        return false;
+    }
     @Override
     public boolean syncAllItemsWithLocal() {
         if( remoteCrud.deleteAllItems()){
@@ -95,17 +107,10 @@ public class SyncedToDoCrudOperations implements IToDoCRUDOperations {
                     }
                     new CreateItemTask(localCrud).run(todo, todonew -> {
 
-                        if(todonew!=null){
-
-                            activity.readDatabase();
-
-
-                        }
-                        else{
-
-                        }
                     });
+
                 }
+                activity.readDatabase(false);
 
             }
             else{

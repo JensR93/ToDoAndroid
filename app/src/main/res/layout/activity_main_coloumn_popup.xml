@@ -12,17 +12,6 @@
         android:layout_margin="30dp"
         android:text="@string/chooseColoumnsStart"
         android:textSize="22sp" />
-
-    <androidx.appcompat.widget.AppCompatCheckBox
-        android:focusable="false"
-        android:id="@+id/itemDescription"
-        android:text="Description"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="30dp"
-        android:layout_marginBottom="30dp"
-        android:layout_column="0">
-    </androidx.appcompat.widget.AppCompatCheckBox>
     <androidx.appcompat.widget.AppCompatCheckBox
         android:focusable="false"
         android:id="@+id/itemExpiry"
@@ -35,8 +24,38 @@
     </androidx.appcompat.widget.AppCompatCheckBox>
     <androidx.appcompat.widget.AppCompatCheckBox
         android:focusable="false"
+        android:id="@+id/itemDescription"
+        android:text="Description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginBottom="30dp"
+        android:layout_column="0">
+    </androidx.appcompat.widget.AppCompatCheckBox>
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:focusable="false"
+        android:id="@+id/itemContacts"
+        android:text="Contacts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginBottom="30dp"
+        android:layout_column="0">
+    </androidx.appcompat.widget.AppCompatCheckBox>
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:focusable="false"
+        android:id="@+id/itemDone"
+        android:text="Done"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginBottom="30dp"
+        android:layout_column="0">
+    </androidx.appcompat.widget.AppCompatCheckBox>
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:focusable="false"
         android:id="@+id/itemBoomark"
-        android:text="Bookmark"
+        android:text="Favourite"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"

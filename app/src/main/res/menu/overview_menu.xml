@@ -10,8 +10,16 @@
         android:icon="@drawable/baseline_sort_white_36dp" app:showAsAction="always"></item>
     <item android:title="Delete All ToDo" android:id="@+id/DeleteAll"
         android:icon="@drawable/outline_delete_forever_white_36" app:showAsAction="never"></item>
+    <item android:title="Delete All local ToDo" android:id="@+id/DeleteAllLocal"
+        android:icon="@drawable/outline_delete_forever_white_36" app:showAsAction="never"></item>
+    <item android:title="Delete All remote ToDo" android:id="@+id/DeleteAllRemote"
+        android:icon="@drawable/outline_delete_forever_white_36" app:showAsAction="never"></item>
+    <item android:title="Start Sync" android:id="@+id/StartSync"
+        android:icon="@drawable/outline_delete_forever_white_36" app:showAsAction="never"></item>
     <item android:title="Sync Remote ToDo with Local ToDo" android:id="@+id/SyncwithLocalItems"
         android:icon="@drawable/outline_delete_forever_white_36" app:showAsAction="never"></item>
     <item android:title="Sync Local ToDo with Remote ToDo" android:id="@+id/SyncwithRemoteItems"
+        android:icon="@drawable/outline_delete_forever_white_36" app:showAsAction="never"></item>
+    <item android:title="Check Remote Connection" android:id="@+id/CheckConnection"
         android:icon="@drawable/outline_delete_forever_white_36" app:showAsAction="never"></item>
 </menu>

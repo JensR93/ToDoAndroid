@@ -41,13 +41,13 @@ public class ToDoApplication extends Application {
     public void setRemoteCRUDMode(boolean localCRUDMode){
         if(!localCRUDMode){
 
-            Toast.makeText(this,"Server not accessible. Use localCRUD",Toast.LENGTH_LONG).show();
+            //Toast.makeText(this,"Server not accessible. Use localCRUD",Toast.LENGTH_LONG).show();
             this.crudOperations=new RoomToDoCRUDOperationsImpl(this);
 
         }
         else{
 
-            Toast.makeText(this,"Server accessible. Use remoteCRUD",Toast.LENGTH_LONG).show();
+            //Toast.makeText(this,"Server accessible. Use remoteCRUD",Toast.LENGTH_LONG).show();
             this.crudOperations=new SyncedToDoCrudOperations(new RoomToDoCRUDOperationsImpl(this),new RetroFitToDoRUDOperationsImpl());
         }
     }

@@ -27,11 +27,6 @@ public class ReadAllItemsTask extends AsyncTask<Void, Void, List<ToDo>> {
 
     @Override
     protected List<ToDo> doInBackground(Void... voids) {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         return crudOperations.readAllItems();
     }
 

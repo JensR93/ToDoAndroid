@@ -12,6 +12,11 @@ import com.google.gson.annotations.SerializedName;
 import com.jens.ToDo.ui.DetailView.Contactmanager;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -112,6 +117,16 @@ public class ToDo implements Serializable {
     }
 
     public void addToDoContact(ToDoContact toDoContact) {
+        for(ToDoContact t : toDoContactList){
+            if(t.getName().equals(toDoContact.getName())||t.getName()==toDoContact.getName()){
+                int a=0;
+                a++;
+            }
+        }
+        if(this.toDoContactList.contains(toDoContact)){
+            int a=0;
+            a++;
+        }
         this.toDoContactList.add(toDoContact);
         //this.contacts.add(toDoContact.getID());
     }
@@ -141,5 +156,51 @@ public class ToDo implements Serializable {
             }
         }
     }
+    public LocalDateTime getExpiryDate(){
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
+        LocalDateTime date =LocalDateTime.ofInstant(Instant.ofEpochMilli(getExpiry()), ZoneId.systemDefault());
+
+        return  date;
+
+    }
+    public String getExpiryDateString(){
+
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu");
+        String localDateString = formatter.format(getExpiryDate());
+        return localDateString;
+    }
+    public LocalTime getExpiryTime(){
+        LocalTime localTime = getExpiryDate().toLocalTime();
+        return localTime;
+    }
+    public int getExpiryDayInt(){
+        String y = getExpiryDateString();
+        String[] x = y.split("[.]");
+        return Integer.parseInt(x[0]);
+    }
+    public int getExpiryMonthInt(){
+        String y = getExpiryDateString();
+        String[] x = y.split("[.]");
+        return Integer.parseInt(x[1]);
+    }
+    public int getExpiryYearInt(){
+        String y = getExpiryDateString();
+        String[] x = y.split("[.]");
+        return Integer.parseInt(x[2]);
+    }
+
+
+    public int getExpiryHourInt() {
+        String y = getExpiryTime().toString();
+        String[] x = y.toString().split(":");
+        return Integer.parseInt(x[0]);
+    }
+
+    public int getExpiryMinuteInt() {
+        String y = getExpiryTime().toString();
+        String[] x = y.toString().split(":");
+        return Integer.parseInt(x[1]);
+    }
 }

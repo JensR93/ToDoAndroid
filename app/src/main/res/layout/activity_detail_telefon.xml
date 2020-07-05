@@ -17,21 +17,22 @@
         android:layout_height="wrap_content"
         android:layout_gravity="left|center"
         android:text="Telefon:"
+        android:textSize="14dp"
         android:id="@+id/textTelefon"
         ></TextView>
     <ImageButton
         android:layout_gravity="right|center"
         android:layout_column="1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:id="@+id/imageButtonSMS"
         android:src="@drawable/outline_textsms_24"
         ></ImageButton>
     <ImageButton
         android:layout_column="2"
         android:id="@+id/imageButtonCall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/outline_home_black_24"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/baseline_phone_black_24dp"
         ></ImageButton>
 </GridLayout>

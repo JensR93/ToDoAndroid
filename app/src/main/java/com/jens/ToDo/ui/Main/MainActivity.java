@@ -10,8 +10,10 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +23,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
@@ -34,9 +38,12 @@ import com.jens.ToDo.model.Settings;
 import com.jens.ToDo.model.ToDo;
 import com.jens.ToDo.model.ToDoApplication;
 import com.jens.ToDo.model.ToDoContact;
+import com.jens.ToDo.model.impl.SyncedToDoCrudOperations;
 import com.jens.ToDo.model.interfaces.IToDoCRUDOperations;
 import com.jens.ToDo.model.tasks.CheckRemoteAvailableTask;
 import com.jens.ToDo.model.tasks.DeleteAllItemTask;
+import com.jens.ToDo.model.tasks.DeleteAllLocalItemTask;
+import com.jens.ToDo.model.tasks.DeleteAllRemoteItemTask;
 import com.jens.ToDo.model.tasks.ReadAllItemsTask;
 import com.jens.ToDo.model.tasks.ReadItemTask;
 import com.jens.ToDo.model.tasks.SyncAllWithLocalItemTask;
@@ -56,11 +63,14 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    boolean isConnected=false;
+    private Contactmanager contactmanager;
     Dialog myDialog;
     Settings mySettings;
     ListView listView;
-
+    ImageButton reloadButton;
     List <View> viewItemList;
+    LinearLayout linearLayoutMessage;
     //region Constants
     public static final int CALL_DETAILVIEW_FOR_CREATE = 0;
     public static final int CALL_DETAILVIEW_FOR_EDIT = 1;
@@ -82,6 +92,8 @@ public class MainActivity extends AppCompatActivity {
     private ToDo selectedItem;
     List<ToDo> dbItemList = null;
     private ProgressBar progressBar;
+    private TextView textMessageMain;
+
     private Comparator<ToDo> alphabeticComperator = (l, r) -> String.valueOf(l.getName()).compareTo(r.getName());
     ArrayAdapter<ToDo> ArrayAdapterToDoItemContact;
     private Comparator<ToDo> expiryComperator = (l, r) -> String.valueOf(l.getExpiry()).compareTo(String.valueOf(r.getExpiry()));
@@ -93,47 +105,45 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewItemList=new ArrayList<View>();
-        mySettings=new Settings(true,true,true);
+        contactmanager=new Contactmanager(MainActivity.this);
+        mySettings=new Settings(true,true,true,true,true);
 
-        //ccc=new Contactmanager(this);
         setContentView(R.layout.activity_main);
         findElements();
 
 
-/*       ArrayAdapterToDoItemContact = new ArrayAdapter<ToDo>(this, R.layout.activity_main_listitem_contacts, R.id.itemContacts) {
-            @NonNull
-            @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View itemView = convertView;
-
-                itemView = getLayoutInflater().inflate(R.layout.activity_main_listitem, null);
-                itemContactName = findViewById(R.id.itemConactName);
-                itemContactName.setText("test");
-                return itemView;
-            }
-        };*/
-
         listViewAdapter = createListViewAdapter(this);
-        updateColoumSort();
+        linearLayoutMessage.setVisibility(View.GONE);
+
 
         myDialog=new Dialog(this);
 
-        new CheckRemoteAvailableTask().run(available -> {
+        loadToDoElementsFromDatabase();
+        updateColoumShow();
+    }
+
+    private void loadToDoElementsFromDatabase() {
+        new CheckRemoteAvailableTask(progressBar).run(available -> {
             ((ToDoApplication) getApplication()).setRemoteCRUDMode(available);
-            if(available)
-            {
-                Toast.makeText(this, R.string.taskRemoteAvailable,Toast.LENGTH_SHORT).show();
-            }
-            else{
-                Toast.makeText(this, R.string.taskRemoteNotAvailable,Toast.LENGTH_SHORT).show();
-            }
+
             ToDoApplication ToDoApplication = (ToDoApplication) getApplication();
             crudOperations = (IToDoCRUDOperations) ToDoApplication.getCRUDOperations();
-            readDatabase();
+
             createListener();
+            readDatabase(true);
+            if(available)
+            {
+                isConnected=true;
+
+
+            }
+            else{
+                isConnected=false;
+            }
 
         });
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.overview_menu, menu);
@@ -155,11 +165,47 @@ public class MainActivity extends AppCompatActivity {
             showSortPopup();
             return true;
         }
+        if(item.getItemId()==R.id.DeleteAllLocal){
+            deleteAllLocalDataItems();
+            return true;
+        }
+        if(item.getItemId()==R.id.DeleteAllRemote){
+            deleteAllRemoteDataItems();
+            return true;
+        }
+        if(item.getItemId()==R.id.StartSync){
+            startSync();
+            return true;
+        }
+        if(item.getItemId()==R.id.CheckConnection){
+            new CheckRemoteAvailableTask(progressBar).run(available -> {
+                ((ToDoApplication) getApplication()).setRemoteCRUDMode(available);
+                progressBar.setVisibility(View.GONE);
+                ToDoApplication ToDoApplication = (ToDoApplication) getApplication();
+                crudOperations = (IToDoCRUDOperations) ToDoApplication.getCRUDOperations();
+
+                if(available)
+                {
+                    isConnected=true;
+                    setMessageText("Connection Test successfull",5000,10);
+                }
+                else{
+                    isConnected=false;
+                    setMessageText("Connection Test failed",0,10);
+                }
+
+            });
+            return true;
+        }
+
+
         if(item.getItemId()==R.id.SyncwithLocalItems){
             syncToDoWithLocal();
+            return true;
         }
         if(item.getItemId()==R.id.SyncwithRemoteItems){
             syncToDoWithRemote();
+            return true;
         }
         if(item.getItemId()==R.id.DeleteAll){
 
@@ -184,17 +230,60 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void startSync() {
+        if(isConnected)
+        {
+            if (listViewAdapter.getCount() > 0) {
+                syncToDoWithLocal();
+            } else {
+                syncToDoWithRemote();
+            }
+        }
+    }
+
+    private void deleteAllLocalDataItems() {
+        SyncedToDoCrudOperations syncedToDoCrudOperations = (SyncedToDoCrudOperations) crudOperations;
+        new DeleteAllLocalItemTask(syncedToDoCrudOperations).run(success -> {
+
+            if(success){
+                setMessageText("Local Todo deleted",2000,6);
+                listViewAdapter.clear();
+                dbItemList.clear();
+            }
+            else{
+
+                setMessageText("Local Todo not deleted",2000,10);
+            }
+            //setContentView(R.layout.activity_main);
+            //finish();
+        });
+    }
+    private void deleteAllRemoteDataItems() {
+        SyncedToDoCrudOperations syncedToDoCrudOperations = (SyncedToDoCrudOperations) crudOperations;
+        new DeleteAllRemoteItemTask(syncedToDoCrudOperations).run(success -> {
+
+            if(success){
+                setMessageText("Remote Todo deleted",2000,6);
+            }
+            else{
+                setMessageText("Remote Todo not deleted",2000,10);
+            }
+            //setContentView(R.layout.activity_main);
+            //finish();
+        });
+    }
     private void deleteAllDataItem() {
 
         new DeleteAllItemTask(crudOperations).run(success -> {
 
             if(success){
-                Toast.makeText(MainActivity.this, R.string.taskDeleteSuccess,Toast.LENGTH_SHORT).show();
+
+                setMessageText("Delete all ToDo successfull",2000,6);
                 listViewAdapter.clear();
                 dbItemList.clear();
             }
             else{
-                Toast.makeText(MainActivity.this, R.string.taskDeleteSuccessFail,Toast.LENGTH_SHORT).show();
+                setMessageText("Delete all ToDo failed",0,6);
             }
             //setContentView(R.layout.activity_main);
             //finish();
@@ -205,10 +294,10 @@ public class MainActivity extends AppCompatActivity {
         new SyncAllWithLocalItemTask(crudOperations).run(success -> {
 
             if(success){
-                Toast.makeText(MainActivity.this, R.string.taskSyncSuccess,Toast.LENGTH_SHORT).show();
+                setMessageText("Sync remote connection with local successfull",2000,6);
             }
             else{
-                Toast.makeText(MainActivity.this, R.string.taskSyncFail,Toast.LENGTH_SHORT).show();
+                setMessageText("Sync remote connection with local not successfull",0,6);
             }
             //setContentView(R.layout.activity_main);
             //finish();
@@ -219,11 +308,14 @@ public class MainActivity extends AppCompatActivity {
         new SyncAllWithRemoteItemTask(crudOperations).run(MainActivity.this, success -> {
 
             if(success){
-                Toast.makeText(MainActivity.this, R.string.taskSyncSuccess,Toast.LENGTH_SHORT).show();
+
+                setMessageText("Sync local connection with remote successfull",2000,6);
 
             }
             else{
-                Toast.makeText(MainActivity.this, R.string.taskSyncFail,Toast.LENGTH_SHORT).show();
+
+
+                setMessageText("Sync local connection with remote not successfull",0,6);
             }
             //setContentView(R.layout.activity_main);
             //finish();
@@ -236,14 +328,33 @@ public class MainActivity extends AppCompatActivity {
         CheckBox checkShowDescription = myDialog.findViewById(R.id.itemDescription);
         CheckBox checkShowExpiry = myDialog.findViewById(R.id.itemExpiry);
         CheckBox checkShowBookmark = myDialog.findViewById(R.id.itemBoomark);
-
+        CheckBox checkShowContacts =myDialog.findViewById(R.id.itemContacts);
+        CheckBox checkShowDone =myDialog.findViewById(R.id.itemDone);
 
         checkShowBookmark.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mySettings.setShowBookmark(isChecked);
 
-                updateColoumSort();
+                updateColoumShow();
+
+            }
+        });
+        checkShowDone.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mySettings.setShowDone(isChecked);
+
+                updateColoumShow();
+
+            }
+        });
+        checkShowContacts.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mySettings.setShowContacts(isChecked);
+
+                updateColoumShow();
 
             }
         });
@@ -251,14 +362,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mySettings.setShowDescription(isChecked);
-                updateColoumSort();
+                updateColoumShow();
             }
         });
         checkShowExpiry.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mySettings.setShowExpiry(isChecked);
-                updateColoumSort();
+                updateColoumShow();
             }
         });
         buttonOk.setOnClickListener(new View.OnClickListener() {
@@ -272,37 +383,60 @@ public class MainActivity extends AppCompatActivity {
         checkShowBookmark.setChecked(mySettings.isShowBookmark());
         checkShowDescription.setChecked(mySettings.isShowDescription());
         checkShowExpiry.setChecked(mySettings.isShowExpiry());
+        checkShowContacts.setChecked(mySettings.isShowContacts());
+        checkShowDone.setChecked(mySettings.isShowDone());
         myDialog.show();
 
 
     }
 
-    private void updateColoumSort() {
+    private void updateColoumShow() {
         if(viewItemList.size()>0){
         for(int i =0;i<viewItemList.size();i++){
             View v =  viewItemList.get(i);
             CheckBox itemBookmark = v.findViewById(R.id.itemFavourite);
+            CheckBox itemDone = v.findViewById(R.id.itemReady);
 
-            TextView itemDescriptionView = v.findViewById(R.id.itemDescription);
-            TextView itemExiry= v.findViewById(R.id.itemExiry);
+            LinearLayout itemDescriptionViewLinearLayout= v.findViewById(R.id.itemDescriptionLayout);
+            LinearLayout itemExiryLinearLayout= v.findViewById(R.id.itemExiryLayout);
+            LinearLayout itemContactsLinearLayout= v.findViewById(R.id.itemContactsLayout);
 
             if(mySettings.isShowDescription()){
-                itemDescriptionView.setHeight(86);
+                itemDescriptionViewLinearLayout.setVisibility(View.VISIBLE);
             }
             else{
-                itemDescriptionView.setHeight(0);
+                itemDescriptionViewLinearLayout.setVisibility(View.GONE);
             }
             if(mySettings.isShowExpiry()){
-                itemExiry.setHeight(48);
+                itemExiryLinearLayout.setVisibility(View.VISIBLE);
+
             }
             else{
-                itemExiry.setHeight(0);
+                itemExiryLinearLayout.setVisibility(View.GONE);
+
             }
             if(mySettings.isShowBookmark()){
-                itemBookmark.setWidth(80);
+                itemBookmark.setVisibility(View.VISIBLE);
+
+
             }
             else{
-                itemBookmark.setWidth(0);
+                itemBookmark.setVisibility(View.GONE);
+            }
+            if(mySettings.isShowDone()){
+                itemDone.setVisibility(View.VISIBLE);
+
+            }
+            else{
+                itemDone.setVisibility(View.GONE);
+            }
+            if(mySettings.isShowContacts()){
+
+                itemContactsLinearLayout.setVisibility(View.VISIBLE);
+            }
+            else{
+                itemContactsLinearLayout.setVisibility(View.GONE);
+
             }
 
         }}
@@ -369,6 +503,7 @@ public class MainActivity extends AppCompatActivity {
                     //long itemid = Long.parseLong(data.getStringExtra(NewTodoActivity.ARG_ITEM_ID));
                     this.dbItemList.add(selectedItem);
                     updateSort();
+
                 } catch (Exception e) {
                 }
 
@@ -388,6 +523,7 @@ public class MainActivity extends AppCompatActivity {
                         this.listViewAdapter.addAll(dbItemList);
                         updateSort();
                         editToDoToList(selectedItem);
+                        updateColoumShow();
                     });
 
                 }
@@ -407,18 +543,23 @@ public class MainActivity extends AppCompatActivity {
                     if (deleted) {
                         updateSort();
                     }
+                    updateColoumShow();
                 }
 
             }
-
+            updateColoumShow();
         }
     }
     
     private void findElements() {
-
+        linearLayoutMessage=findViewById(R.id.linearLayoutMessage);
         listView = findViewById(R.id.listView1);
         listView.setAdapter(listViewAdapter);
         progressBar = findViewById(R.id.progressbar);
+        textMessageMain=findViewById(R.id.textMessageMain);
+        reloadButton = findViewById(R.id.imageButtonReloadConnection);
+
+
     }
     private void createListener() {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -433,6 +574,54 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        reloadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadToDoElementsFromDatabase();
+            }
+        });
+
+
+
+    }
+    private void setMessageText(String text, int length, int textsize){
+        linearLayoutMessage.setVisibility(View.VISIBLE);
+        if(isConnected){
+            if(textsize>0){
+                float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, textsize, getResources().getDisplayMetrics());
+                textMessageMain.setTextSize(pixels);
+            }
+            textMessageMain.setTextColor(Color.GREEN);
+            reloadButton.setVisibility(View.GONE);
+
+
+            new AsyncTask<Void,Void,Void>(){
+
+                @Override
+                protected void onPostExecute(Void aVoid) {
+                    linearLayoutMessage.setVisibility(View.GONE);
+                    super.onPostExecute(aVoid);
+                }
+
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    if(length>0){
+                    try {
+                        Thread.sleep(length);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    }
+                    return null;
+                }
+            }.execute();
+        }
+        else{
+            textMessageMain.setTextColor(Color.RED);
+            reloadButton.setVisibility(View.VISIBLE);
+        }
+        textMessageMain.setText(text);
     }
     private void handleSelectedItem(ToDo clickedToDo) {
         Intent newTodoIntentForEdit = new Intent(this, DetailViewActivity.class);
@@ -442,6 +631,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayAdapter<ToDo> createListViewAdapter(MainActivity mainActivity) {
 
+
        ArrayAdapter<ToDo> a =   new ArrayAdapter<ToDo>(this, R.layout.activity_main_listitem, R.id.itemName) {
 
 
@@ -449,14 +639,22 @@ public class MainActivity extends AppCompatActivity {
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
                 View itemView = convertView;
                 ToDo currentItem = getItem(position);
+                if(currentItem.getToDoContactList()!=null&&currentItem.getToDoContactList().size()==0){
+                    contactmanager.readContactFromDataItem(currentItem);
+
+                }
                 itemView = getLayoutInflater().inflate(R.layout.activity_main_listitem, null);
                 viewItemList.add(itemView);
                 TextView itemNameView = itemView.findViewById(R.id.itemName);
 
                 TextView itemDescriptionView = itemView.findViewById(R.id.itemDescription);
                 TextView itemExiry= itemView.findViewById(R.id.itemExiry);
-/*                itemContacts= itemView.findViewById(R.id.itemContacts);
-                itemContacts.setAdapter(ArrayAdapterToDoItemContact);*/
+                TextView itemContacts= itemView.findViewById(R.id.itemContacts);
+
+                LinearLayout itemDescriptionViewLinearLayout= itemView.findViewById(R.id.itemDescriptionLayout);
+                LinearLayout  itemExiryLinearLayout= itemView.findViewById(R.id.itemExiryLayout);
+                LinearLayout  itemContactsLinearLayout= itemView.findViewById(R.id.itemContactsLayout);
+
 
                 CheckBox itemReadyView = itemView.findViewById(R.id.itemReady);
                 CheckBox itemFavouriteView=itemView.findViewById(R.id.itemFavourite);
@@ -478,6 +676,14 @@ public class MainActivity extends AppCompatActivity {
                             String localDateString = formatter.format(date);
 
                         itemExiry.setText(localDateString+" "+localTime);
+                    }
+                    if(currentItem.getToDoContactList()!=null){
+                        int count =0;
+                        String value="";
+                        for(ToDoContact contact: currentItem.getToDoContactList()){
+                            value+=contact.getName()+"\n";
+                        }
+                        itemContacts.setText(value);
                     }
 
                     long now= new java.sql.Timestamp(System.currentTimeMillis()).getTime();
@@ -555,13 +761,23 @@ return  a;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public void readDatabase() {
+    public void readDatabase(boolean sync) {
 
         new ReadAllItemsTask(this.crudOperations, progressBar).run(ToDos -> {
             dbItemList = ToDos;
             listViewAdapter.clear();
             listViewAdapter.addAll(ToDos);
             updateSort();
+            String message ="";
+            if(sync){
+               // message="Remote Connection successfull";
+                startSync();
+            }
+            else{
+                message="Remote Connection failed";
+                setMessageText(message,0,10);
+            }
+
 
         });
 

@@ -4,24 +4,55 @@
     android:id="@+id/linearLayoutDashboard"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context=".ui.Main.MainActivity"
 
-    android:padding="16dp"
+
     android:orientation="vertical">
+
 
     <ProgressBar
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
         android:visibility="gone"
         android:id="@+id/progressbar"
         android:indeterminate="true"
         android:layout_gravity="center"
         ></ProgressBar>
+    <LinearLayout
+        android:id="@+id/linearLayoutMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/textMessageMain"
+            android:minLines="2"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="26dp"
+            android:text="Message123"
+            android:gravity="center"
+            android:layout_width="350dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"></TextView>
+        <ImageButton
+            android:id="@+id/imageButtonReloadConnection"
+            android:background="@android:color/transparent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_autorenew_black_18dp"
+            ></ImageButton>
+    </LinearLayout>
     <ListView
         android:id="@+id/listView1"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="top"
+        android:layout_marginBottom="16dp"
+        android:orientation="vertical">
     </ListView>
 
 </LinearLayout>

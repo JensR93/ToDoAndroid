@@ -20,10 +20,10 @@ import java.util.ArrayList;
 
 public class Contactmanager {
 
-    public DetailViewActivity activity;
+    public Activity activity;
 
 
-    public Contactmanager(DetailViewActivity detailViewActivity) {
+    public Contactmanager(Activity detailViewActivity) {
         this.activity = detailViewActivity;
     }
 
@@ -64,37 +64,6 @@ public class Contactmanager {
             String contactName = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
             return contactId = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
 
-
-//            String phoneNumber = null;
-//            String emailAdress=null;;
-//
-//            //Log.i(detailViewActivity.LOGGING_TAG, String.format("contactID: %s", contactId));
-//
-//            if (verifyReadContactPermission()) {
-//
-//
-//                Cursor pCur = activity.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-//                        null,ContactsContract.CommonDataKinds.Phone.CONTACT_ID+ " = ?", new String[]{contactId}, null);
-//
-//                while (pCur.moveToNext()) {
-//                    // Do something with phones
-//                    phonenNmber[0] = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-//                    phoneNumber = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-//
-//                    //Log.i(detailViewActivity.LOGGING_TAG, String.format("phone: %s", phoneNumber));
-//                    Cursor emailCur = activity.getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-//                            null,ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",new String[]{contactId}, null);
-//                    if (emailCur.moveToNext()) {
-//                        emailAdress = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-//                        emailAdress2[0]=emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-//                        //    Log.i(detailViewActivity.LOGGING_TAG, String.format("email: %s", emailAdress));
-//                    }
-//                    emailCur.close();
-//                }
-//
-//                //return new ToDoContact(contactId,contactName,phonenNmber,emailAdress2,null);
-//                //return new ToDoContact();
-//            }
         }
         return contactId;
     }
@@ -113,7 +82,7 @@ public class Contactmanager {
             retval+="\n"+toDoContact.getName();
         }
 
-        activity.createContactList();
+        //activity.createContactList();
         return selectedItem;
     }
 
