@@ -100,29 +100,38 @@ public class ContactManager {
                 final Cursor EmailCursor = activity.getContentResolver().query(
                         ContactsContract.CommonDataKinds.Email.CONTENT_URI,
                         new String[]{
+                                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
                                 ContactsContract.CommonDataKinds.Email.ADDRESS,
                         },
                         ContactsContract.Data.CONTACT_ID + "=?",
                         new String[]{String.valueOf(stringContactId)}, null);
 
-                try {
 
-                    final int idxName = phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                name=getNameUsingContactId(stringContactId);
+
+
+                try {
+                    final int idxName2 = phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                    final int idxName3 = EmailCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+
+
                     final int idxPhone = phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER);
                     final int idxEmail = EmailCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.ADDRESS);
 
                     int count = 0;
                     phoneNumber = new String[phoneCursor.getCount()];
                     emailAdress = new String[EmailCursor.getCount()];
+
                     while (phoneCursor.moveToNext()) {
                         phoneNumber[count] = phoneCursor.getString(idxPhone);
-                        name = phoneCursor.getString(idxName);
+                        //name = phoneCursor.getString(idxName2);
                         retval = retval + "\n" + name + "(" + stringContactId + ")";
                         count++;
                     }
                     count = 0;
                     while (EmailCursor.moveToNext()) {
                         emailAdress[count] = EmailCursor.getString(idxEmail);
+                        //name = EmailCursor.getString(idxName3);
                         count++;
                     }
                     photo = readPhoto(Long.parseLong(stringContactId));
@@ -136,6 +145,33 @@ public class ContactManager {
 
             }
         }
+    }
+
+    private String getNameUsingContactId(String contactId){
+        String name="";
+        String cContactIdString = ContactsContract.Contacts._ID;
+        Uri cCONTACT_CONTENT_URI = ContactsContract.Contacts.CONTENT_URI;
+        String cDisplayNameColumn = ContactsContract.Contacts.DISPLAY_NAME;
+
+        String selection = cContactIdString + " = ? ";
+        String[] selectionArgs = new String[]{String.valueOf(contactId)};
+
+        Cursor cursor = activity.getContentResolver().query(cCONTACT_CONTENT_URI, null, selection, selectionArgs, null);
+        if ((cursor != null) && (cursor.getCount() > 0)) {
+            cursor.moveToFirst();
+            while ((cursor != null) && (cursor.isAfterLast() == false)) {
+                if (cursor.getColumnIndex(cContactIdString) >= 0) {
+                    if (contactId.equals(cursor.getString(cursor.getColumnIndex(cContactIdString)))) {
+                         name = cursor.getString(cursor.getColumnIndex(cDisplayNameColumn));
+                        break;
+                    }
+                }
+                cursor.moveToNext();
+            }
+        }
+        if (cursor != null)
+            cursor.close();
+        return name;
     }
 
     /**

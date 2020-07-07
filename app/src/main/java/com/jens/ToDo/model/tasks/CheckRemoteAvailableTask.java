@@ -27,7 +27,7 @@ public class CheckRemoteAvailableTask extends AsyncTask<Void,Void,Boolean> {
         try {
 
 
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://10.0.2.2:8080/").openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL("http://192.168.178.39:8080/").openConnection();
             connection.setReadTimeout(1000);
             connection.setConnectTimeout(1500);
             connection.setRequestMethod("GET");

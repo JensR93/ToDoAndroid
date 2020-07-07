@@ -54,6 +54,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
     private IToDoCRUDOperations crudOperations;
     private ToDo selectedItem;
     private ContactManager contactmanager;
+    private ContactListItem contactListItem;
     private long itemId;
 
     //region UI Elements
@@ -203,6 +204,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
             Log.i(getClass().getSimpleName(), "got intent from contact picker" + data);
             selectedItem = contactmanager.showAddContactDetails(data.getData(), selectedItem);
             textImportContacts.setText(selectedItem.getContactStringMultiLine());
+            contactListItem = new ContactListItem(DetailViewActivity.this, selectedItem,contactmanager,findViewById(R.id.listView2));
         }
     }
 
@@ -293,7 +295,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
                         inputDueTime.setText(localTime.toString());
                     }
 
-                    new ContactListItem(DetailViewActivity.this, selectedItem,contactmanager,findViewById(R.id.listView2));
+                     contactListItem = new ContactListItem(DetailViewActivity.this, selectedItem,contactmanager,findViewById(R.id.listView2));
                     linearLayoutDetail.setEnabled(true);
                 }
             }
@@ -342,6 +344,7 @@ public class DetailViewActivity extends AppCompatActivity implements View.OnClic
         buttonImportContacts.setOnClickListener(v -> {
             Intent contactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
             startActivityForResult(contactIntent, CALL_CONTACT_PICK);
+
         });
 
     }

@@ -1,6 +1,9 @@
 package com.jens.ToDo.model;
 
 public class Settings {
+
+    private static Settings instance;
+
     private boolean showDescription = false;
     private boolean showExpiry = false;
     private boolean showBookmark = false;
@@ -14,6 +17,13 @@ public class Settings {
         this.showBookmark = showBookmark;
         this.showDone = showDone;
         this.showContacts = showContacts;
+    }
+
+    public static Settings getInstance() {
+        if(instance==null){
+            instance=new Settings(true,true,true,true,false);
+        }
+        return instance;
     }
 
     public boolean isShowDescription() {

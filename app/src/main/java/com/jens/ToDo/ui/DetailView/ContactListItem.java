@@ -55,7 +55,7 @@ public class ContactListItem {
      * Add the contactList from the ToDo-Element to the listViewAdapter
      * Set the listViewAdapter to the listView
      */
-    private void createContactList() {
+    public void createContactList() {
         ArrayAdapter<ToDoContact> listViewAdapter = createListViewAdapter(selectedToDoItem.getToDoContactList());
         listViewAdapter.addAll(selectedToDoItem.getToDoContactList());
         listView.setAdapter(listViewAdapter);
@@ -92,18 +92,20 @@ public class ContactListItem {
                 itemNameView.setOnClickListener(v -> showContactPopup(selectedListItem.get(position)));
 
                 buttonEmail.setOnClickListener(v -> {
-                    Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-                    emailIntent.setData(Uri.parse("mailto:"+selectedListItem.get(position).getEmailAdress()[0]));
-                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, selectedToDoItem.getName());
-                    emailIntent.putExtra(Intent.EXTRA_TEXT, selectedToDoItem.getDescription());
-                    Activity.startActivity(Intent.createChooser(emailIntent, "Choose an Email client :"));
+                    contactmanager.sendEmail(selectedListItem.get(position).getEmailAdress()[0],"ToDo: "+selectedToDoItem.getName(),selectedToDoItem.getName()+"("+selectedToDoItem.getDescription()+")");
+//                    Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+//                    emailIntent.setData(Uri.parse("mailto:"+selectedListItem.get(position).getEmailAdress()[0]));
+//                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, selectedToDoItem.getName());
+//                    emailIntent.putExtra(Intent.EXTRA_TEXT, selectedToDoItem.getDescription());
+//                    Activity.startActivity(Intent.createChooser(emailIntent, "Choose an Email client :"));
                 });
                 buttonSMS.setOnClickListener(v -> {
-                    Intent smsIntent = new Intent(Intent.ACTION_SENDTO);
-                    smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    smsIntent.setData(Uri.parse("smsto:" + selectedListItem.get(position).getPhoneNo()[0])); // This ensures only SMS apps respond
-                    smsIntent.putExtra("sms_body", selectedToDoItem.getDescription());
-                    Activity.startActivity(smsIntent);
+                    contactmanager.sendSMS(selectedListItem.get(position).getPhoneNo()[0],selectedToDoItem.getName()+"("+selectedToDoItem.getDescription()+")");
+//                    Intent smsIntent = new Intent(Intent.ACTION_SENDTO);
+//                    smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    smsIntent.setData(Uri.parse("smsto:" + selectedListItem.get(position).getPhoneNo()[0])); // This ensures only SMS apps respond
+//                    smsIntent.putExtra("sms_body", selectedToDoItem.getDescription());
+//                    Activity.startActivity(smsIntent);
                 });
                 buttonDelete.setOnClickListener(v -> {
                     ToDoContact toDoContact = selectedListItem.get(position);
@@ -115,6 +117,18 @@ public class ContactListItem {
                 });
 
 
+                if(selectedListItem.get(position).getEmailAdress()==null||selectedListItem.get(position).getEmailAdress().length==0){
+                    buttonEmail.setEnabled(false);
+                }
+                else{
+                    buttonEmail.setEnabled(true);
+                }
+                if(selectedListItem.get(position).getPhoneNo()==null||selectedListItem.get(position).getPhoneNo().length==0){
+                    buttonSMS.setEnabled(false);
+                }
+                else{
+                    buttonSMS.setEnabled(true);
+                }
                 if (itemNameView != null) {
                     itemNameView.setText(selectedListItem.get(position).getName());
 
@@ -165,8 +179,11 @@ public class ContactListItem {
                 String number = toDoContact.getPhoneNo()[position];
                 tel.setText(number);
 
-                imageButtonSMS.setOnClickListener(v -> contactmanager.sendSMS(toDoContact.getPhoneNo()[position],"Hello"));
+                imageButtonSMS.setOnClickListener(v -> contactmanager.sendSMS(toDoContact.getPhoneNo()[position],selectedToDoItem.getName()+"("+selectedToDoItem.getDescription()+")"));
                 imageButtonCall.setOnClickListener(v -> contactmanager.startCall(toDoContact.getPhoneNo()[position]));
+
+
+
                 return itemView;
             }
 
@@ -180,7 +197,7 @@ public class ContactListItem {
                 ImageButton imageButtonEMail= itemView.findViewById(R.id.imageButtonEmail);
                 String adress = toDoContact.getEmailAdress()[position];
                 email.setText(adress);
-                imageButtonEMail.setOnClickListener(v -> contactmanager.sendEmail(toDoContact.getEmailAdress()[position],"Hello","TestEmail"));
+                imageButtonEMail.setOnClickListener(v -> contactmanager.sendEmail(toDoContact.getEmailAdress()[position],"ToDo: "+selectedToDoItem.getName(),selectedToDoItem.getName()+"("+selectedToDoItem.getDescription()+")"));
 
                 return itemView;
             }

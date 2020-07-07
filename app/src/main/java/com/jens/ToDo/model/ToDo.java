@@ -112,16 +112,16 @@ public class ToDo implements Serializable {
     }
 
     public void addToDoContact(ToDoContact toDoContact) {
-        for(ToDoContact t : toDoContactList){
-            if(t.getName().equals(toDoContact.getName())||t.getName()==toDoContact.getName()){
-                int a=0;
-                a++;
-            }
-        }
-        if(this.toDoContactList.contains(toDoContact)){
-            int a=0;
-            a++;
-        }
+//        for(ToDoContact t : toDoContactList){
+//            if(t.getName().equals(toDoContact.getName())||t.getName()==toDoContact.getName()){
+//                int a=0;
+//                a++;
+//            }
+//        }
+//        if(this.toDoContactList.contains(toDoContact)){
+//            int a=0;
+//            a++;
+//        }
         this.toDoContactList.add(toDoContact);
         //this.contacts.add(toDoContact.getID());
     }

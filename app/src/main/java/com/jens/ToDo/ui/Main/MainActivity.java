@@ -61,69 +61,87 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public  class MainActivity extends AppCompatActivity {
 
-    boolean isConnected=false;
-    private ContactManager contactmanager;
-    Dialog myDialog;
-    Settings mySettings;
-    ListView listView;
-    ImageButton reloadButton;
-    List <View> viewItemList;
-    LinearLayout linearLayoutMessage;
+
     //region Constants
     public static final int CALL_DETAILVIEW_FOR_CREATE = 0;
     public static final int CALL_DETAILVIEW_FOR_EDIT = 1;
     private static final String LOGGING_TAG = DetailViewActivity.class.getSimpleName();
-
     //endregion
-    
-    private boolean favouriteSort = true;
-    private ContactManager ccc;
+
     
     //region Variable
-
+    boolean isConnected=false;
+    private ContactManager contactmanager;
+    private Dialog myDialog;
+    private Settings mySettings;
+    private List <View> viewItemList;
     private ArrayAdapter<ToDo> listViewAdapter;
-    private ArrayAdapter<ToDoContact> listViewAdapterContacts;
-    private Intent newTodoIntent;
-
-    private Intent settingsIntent;    //private ToDoDatabase db;
     private IToDoCRUDOperations crudOperations;
     private ToDo selectedItem;
-    List<ToDo> dbItemList = null;
+    private List<ToDo> dbItemList = null;
+
+    private boolean favouriteSort = true;
+
+    //endregion
+
+
+
+
+    //region UI
     private ProgressBar progressBar;
     private TextView textMessageMain;
+    private ListView listView;
+    private ImageButton reloadButton;
+    private LinearLayout linearLayoutMessage;
+    //endregion
 
-    private Comparator<ToDo> alphabeticComperator = (l, r) -> String.valueOf(l.getName()).compareTo(r.getName());
-    ArrayAdapter<ToDo> ArrayAdapterToDoItemContact;
-    private Comparator<ToDo> expiryComperator = (l, r) -> String.valueOf(l.getExpiry()).compareTo(String.valueOf(r.getExpiry()));
-    private Comparator<ToDo> undonedoneComperator = (l, r) -> Boolean.compare(l.isDone(),r.isDone());
 
-    private Comparator<ToDo> favouriteComperator = (l, r) -> Boolean.compare(r.isFavourite(),l.isFavourite());
-    //endregion 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mySettings=Settings.getInstance();
         viewItemList=new ArrayList<View>();
         contactmanager=new ContactManager(MainActivity.this);
-        mySettings=new Settings(true,true,true,true,true);
 
         setContentView(R.layout.activity_main);
         findElements();
 
 
         listViewAdapter = createListViewAdapter(this);
+
         linearLayoutMessage.setVisibility(View.GONE);
 
 
         myDialog=new Dialog(this);
 
         loadToDoElementsFromDatabase();
-        updateColoumShow();
+        updateSort();
     }
 
+
+    /**
+     * Async CheckRemote Task Sets isConnected Variable
+     * Saves the crudOperation
+     * Creates listener for Listview and ReloadButton
+     * Reads Database with Sync Mode
+     *
+     */
     private void loadToDoElementsFromDatabase() {
         new CheckRemoteAvailableTask(progressBar).run(available -> {
+            if(available)
+            {
+                isConnected=true;
+
+                setMessageText("Remote Connection available",2000,6);
+
+
+            }
+            else{
+                isConnected=false;
+                setMessageText("Remote Connection\nnot available",0,0);
+            }
             ((ToDoApplication) getApplication()).setRemoteCRUDMode(available);
 
             ToDoApplication ToDoApplication = (ToDoApplication) getApplication();
@@ -131,15 +149,6 @@ public class MainActivity extends AppCompatActivity {
 
             createListener();
             readDatabase(true);
-            if(available)
-            {
-                isConnected=true;
-
-
-            }
-            else{
-                isConnected=false;
-            }
 
         });
     }
@@ -152,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Intent newTodoIntent;
         if(item.getItemId()==R.id.showColoumns){
             showColoumnPopup();
             return true;
@@ -230,6 +240,10 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * If connected == true
+     * If elements in listview --> SyncWithLocal, Else --> SyncWithRemote
+     */
     private void startSync() {
         if(isConnected)
         {
@@ -239,16 +253,20 @@ public class MainActivity extends AppCompatActivity {
                 syncToDoWithRemote();
             }
         }
+
     }
 
+    /**
+     * Async DeleteLocalItemsTask --> clears all elements from listViewAdapter and dbItemList
+     */
     private void deleteAllLocalDataItems() {
+        if(isConnected){
         SyncedToDoCrudOperations syncedToDoCrudOperations = (SyncedToDoCrudOperations) crudOperations;
         new DeleteAllLocalItemTask(syncedToDoCrudOperations).run(success -> {
 
             if(success){
                 setMessageText("Local Todo deleted",2000,6);
-                listViewAdapter.clear();
-                dbItemList.clear();
+                clearListView();
             }
             else{
 
@@ -257,8 +275,13 @@ public class MainActivity extends AppCompatActivity {
             //setContentView(R.layout.activity_main);
             //finish();
         });
+        }
     }
+    /**
+     * Async DeleteRemoteItemsTask --> After success only Message
+     */
     private void deleteAllRemoteDataItems() {
+        if(isConnected){
         SyncedToDoCrudOperations syncedToDoCrudOperations = (SyncedToDoCrudOperations) crudOperations;
         new DeleteAllRemoteItemTask(syncedToDoCrudOperations).run(success -> {
 
@@ -270,8 +293,11 @@ public class MainActivity extends AppCompatActivity {
             }
             //setContentView(R.layout.activity_main);
             //finish();
-        });
+        });}
     }
+    /**
+     * Async DeleteAllItemsTask --> clears all elements from listViewAdapter and dbItemList
+     */
     private void deleteAllDataItem() {
 
         new DeleteAllItemTask(crudOperations).run(success -> {
@@ -279,8 +305,7 @@ public class MainActivity extends AppCompatActivity {
             if(success){
 
                 setMessageText("Delete all ToDo successfull",2000,6);
-                listViewAdapter.clear();
-                dbItemList.clear();
+                clearListView();
             }
             else{
                 setMessageText("Delete all ToDo failed",0,6);
@@ -289,12 +314,19 @@ public class MainActivity extends AppCompatActivity {
             //finish();
         });
     }
+
+    private void clearListView(){
+        listViewAdapter.clear();
+        dbItemList.clear();
+    }
+
     private void syncToDoWithLocal() {
 
         new SyncAllWithLocalItemTask(crudOperations).run(success -> {
 
             if(success){
                 setMessageText("Sync remote connection with local successfull",2000,6);
+                updateSort();
             }
             else{
                 setMessageText("Sync remote connection with local not successfull",0,6);
@@ -324,6 +356,8 @@ public class MainActivity extends AppCompatActivity {
                         });
 
                     }
+
+                    updateSort();
 
 
                 });
@@ -751,7 +785,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }
 
-
+                updateColoumShow();
                 return itemView;
 
             }
@@ -759,13 +793,15 @@ public class MainActivity extends AppCompatActivity {
 
         };
 
-return  a;
+        return  a;
     }
 
 
 
     private void updateSort() {
-
+        Comparator<ToDo> expiryComperator = (l, r) -> String.valueOf(l.getExpiry()).compareTo(String.valueOf(r.getExpiry()));
+        Comparator<ToDo> undonedoneComperator = (l, r) -> Boolean.compare(l.isDone(),r.isDone());
+        Comparator<ToDo> favouriteComperator = (l, r) -> Boolean.compare(r.isFavourite(),l.isFavourite());
         if(favouriteSort){
             this.listViewAdapter.sort(favouriteComperator);
         }
@@ -778,6 +814,7 @@ return  a;
         listView.setAdapter(listViewAdapter);
         listView.invalidateViews();
         listView.refreshDrawableState();
+        updateColoumShow();
     }
 
     private void editToDoToList(ToDo d1) {
@@ -785,6 +822,11 @@ return  a;
         selectedItem.setName(d1.getName());
     }
 
+    /**
+     * Async ReadAllItemTask from Database
+     * Optional: Start Sync
+     * @param sync
+     */
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void readDatabase(boolean sync) {
 
@@ -793,12 +835,12 @@ return  a;
             if(dbItemList.size()>0){
             listViewAdapter.clear();
             listViewAdapter.addAll(ToDos);
-            updateSort();
             String message ="";}
             if(sync){
                // message="Remote Connection successfull";
                 startSync();
             }
+            updateSort();
 
 
 

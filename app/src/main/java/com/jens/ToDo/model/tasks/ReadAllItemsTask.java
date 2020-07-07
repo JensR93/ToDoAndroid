@@ -25,6 +25,11 @@ public class ReadAllItemsTask extends AsyncTask<Void, Void, List<ToDo>> {
         this.progressBar = progressBar;
     }
 
+
+//    Actions wie sms und email haben keine Infos des TODOS
+//            Erster Appstart --> Keine Berechtigung wegen Kontakte lesen
+
+
     @Override
     protected List<ToDo> doInBackground(Void... voids) {
         return crudOperations.readAllItems();

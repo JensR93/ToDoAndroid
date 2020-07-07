@@ -2,13 +2,17 @@ package com.jens.ToDo.ui.login;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jens.ToDo.R;
@@ -28,6 +32,7 @@ public class LoginActivity extends Activity {
     private EditText password;
     private Button buttonSignIn;
     private Button buttonStandardLogin;
+    private TextView textViewRemoteAvailable, textViewMessage;
     private boolean validEmail,validPassword;
     private ProgressBar progressBar;
     @Override
@@ -59,6 +64,8 @@ public class LoginActivity extends Activity {
 
             @Override
             public void afterTextChanged(Editable s) {
+
+                setMessage("",0,false);
                 if(checkValidEmail(s.toString()))
                 {
                     validEmail=true;
@@ -82,11 +89,13 @@ public class LoginActivity extends Activity {
 
             @Override
             public void afterTextChanged(Editable s) {
+                setMessage("",0,false);
                 if(checkValidPassword(s.toString())){
                     validPassword=true;
                 }
                 else {
                     validPassword=false;
+
                 }
                 checkValidLogin();
             }
@@ -103,7 +112,7 @@ public class LoginActivity extends Activity {
     }
 
     private boolean checkValidEmail(String text) {
-        if(text!=null&&text.length()>0&&text.contains("@"))
+        if(text!=null&&text.length()>0&&text.contains("@")&&text.length()>4)
         {
             return true;
         }
@@ -123,8 +132,9 @@ public class LoginActivity extends Activity {
             ((ToDoApplication) getApplication()).setRemoteCRUDMode(available);
             if(available)
             {
-                //Toast.makeText(this, R.string.taskRemoteAvailable,Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, R.string.taskRemoteAvailable,ToasRemoteAvailablet.LENGTH_LONG).show();
                 progressBar.setVisibility(View.GONE);
+                textViewRemoteAvailable.setVisibility(View.VISIBLE);
 
             }
             else{
@@ -146,6 +156,9 @@ public class LoginActivity extends Activity {
         email=findViewById(R.id.username);
         buttonSignIn=findViewById(R.id.login);
         buttonStandardLogin=findViewById(R.id.Standardlogin);
+
+        textViewRemoteAvailable=findViewById(R.id.RemoteAvailable);
+        textViewMessage =findViewById(R.id.Message);
         buttonStandardLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -153,6 +166,49 @@ public class LoginActivity extends Activity {
                 password.setText("000000");
             }
         });
+        email.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(password.getText()!=null){
+                        if(password.getText().length()!=6&&password.getText().length()>0){
+                        setMessage("Password is not 6 digits",2000,true);
+                    }
+                }
+                return false;
+            }
+        });
+        email.setOnClickListener(v -> {
+            if(password.getText()!=null){
+                if(password.getText().length()!=6&&password.getText().length()>0){
+                    setMessage("Password is not 6 digits",2000,true);
+                }
+            }
+        });
+        password.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(email.getText()!=null&&email.getText().length()>0){
+                    if(email.getText().length()<5){
+                        setMessage("email adress is too short",2000,true);
+                    }
+                    else if(!email.getText().toString().contains("@")){
+                        setMessage("Please enter a valid email",2000,true);
+                    }
+                }
+                return false;
+            }
+        });
+        password.setOnClickListener(v -> {
+            if(email.getText()!=null){
+                if(email.getText().length()<5){
+                    setMessage("email adress is too short",2000,true);
+                }
+                else if(!email.getText().toString().contains("@")){
+                    setMessage("Please enter a valid email",2000,true);
+                }
+            }
+        });
+
         buttonSignIn.setOnClickListener(v -> {
             User user = new User(email.getText().toString(),password.getText().toString());
             progressBar.setVisibility(View.VISIBLE);
@@ -162,8 +218,9 @@ public class LoginActivity extends Activity {
 
                 @Override
                 public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                    progressBar.setVisibility(View.GONE);
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(2000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -175,9 +232,9 @@ public class LoginActivity extends Activity {
                     startActivity(loginSuccessIntent);
                     }
                     if(response.body()!=null&&!response.body()){
-                        progressBar.setVisibility(View.GONE);
                         Toast.makeText(LoginActivity.this,"Login failed",Toast.LENGTH_LONG).show();
 
+                        setMessage("Login failed",2000,true);
                     }
                 }
 
@@ -185,6 +242,7 @@ public class LoginActivity extends Activity {
                 public void onFailure(Call<Boolean> call, Throwable t) {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(LoginActivity.this,"Login failed",Toast.LENGTH_LONG).show();
+                    setMessage("Login failed",2000,true);
                 }
             });
 //            boolean success = r.authenticateUser(user);
@@ -198,4 +256,17 @@ public class LoginActivity extends Activity {
 
     }
 
+    private void setMessage(String message, int duration, boolean fail){
+        if(fail){
+            textViewMessage.setTextSize(TypedValue.COMPLEX_UNIT_DIP,20);
+            textViewMessage.setTextColor(Color.RED);
+        }
+        else{
+
+            textViewMessage.setTextColor(Color.GREEN);
+            textViewMessage.setTextSize(TypedValue.COMPLEX_UNIT_DIP,12);
+        }
+        textViewMessage.setVisibility(View.VISIBLE);
+        textViewMessage.setText(message);
+    }
 }

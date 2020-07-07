@@ -35,7 +35,7 @@
             android:textSize="26dp"
             android:text="Message123"
             android:gravity="center"
-            android:layout_width="350dp"
+            android:layout_width="320dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"></TextView>
         <ImageButton
